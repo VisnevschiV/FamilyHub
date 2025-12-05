@@ -1,21 +1,34 @@
 package com.visnevschi.familyhub;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController // 1. This annotation tells Spring: "I handle web requests"
+import java.util.List;
+
+@RestController
 public class HomeController {
 
-    // 2. This maps the root URL (http://localhost:8080/) to this function
-    @GetMapping("/") 
+    // Inject the Repository
+    @Autowired
+    private FamilyMemberRepository repository;
+
+    @GetMapping("/")
     public String home() {
-        // The string returned here is what you will see in the browser
-        return "Welcome to the FamilyHub Backend!"; 
+        return "Welcome to FamilyHub!";
     }
 
-    // 3. This maps a specific path (http://localhost:8080/check)
-    @GetMapping("/check")
-    public String checkSystem() {
-        return "All systems operational.";
+    // GET /members -> Returns a JSON list of all family members in the DB
+    @GetMapping("/members")
+    public List<FamilyMember> getAllMembers() {
+        return repository.findAll();
+    }
+
+    // POST /members -> Adds a new member (received as JSON)
+    @PostMapping("/members")
+    public FamilyMember addMember(@RequestBody FamilyMember newMember) {
+        return repository.save(newMember);
     }
 }
