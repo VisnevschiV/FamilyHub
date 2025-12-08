@@ -1,12 +1,11 @@
 package com.visnevschi.familyhub;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
+import java.util.Set;
 
 @Entity // This tells Hibernate: "Make a table out of this class"
-public class FamilyMember {
+public class Person {
 
     @Id // This is the Primary Key
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment (1, 2, 3...)
@@ -16,11 +15,19 @@ public class FamilyMember {
     private String role; // e.g., "Husband", "Wife", "Kid"
     private String email;
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "member_id")
+    private Set<CalendarEvent> events;
+
+    @JoinColumn(name = "family_id")
+    @ManyToOne
+    private Family family;
+
     // Standard Constructors
-    public FamilyMember() {
+    public Person() {
     }
 
-    public FamilyMember(String name, String role, String email) {
+    public Person(String name, String role, String email) {
         this.name = name;
         this.role = role;
         this.email = email;

@@ -13,7 +13,7 @@ public class HomeController {
 
     // Inject the Repository
     @Autowired
-    private FamilyMemberRepository repository;
+    private PersonRepository repository;
 
     @GetMapping("/")
     public String home() {
@@ -22,13 +22,13 @@ public class HomeController {
 
     // GET /members -> Returns a JSON list of all family members in the DB
     @GetMapping("/members")
-    public List<FamilyMember> getAllMembers() {
+    public List<Person> getAllMembers() {
         return repository.findAll();
     }
 
     // POST /members -> Adds a new member (received as JSON)
     @PostMapping("/members")
-    public FamilyMember addMember(@RequestBody FamilyMember newMember) {
+    public Person addMember(@RequestBody Person newMember) {
         return repository.save(newMember);
     }
 }
