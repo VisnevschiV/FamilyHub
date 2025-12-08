@@ -2,6 +2,7 @@ package com.visnevschi.familyhub;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity // This tells Hibernate: "Make a table out of this class"
@@ -17,7 +18,7 @@ public class Person {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "member_id")
-    private Set<CalendarEvent> events;
+    private Set<CalendarEvent> events = new HashSet<>();
 
     @JoinColumn(name = "family_id")
     @ManyToOne
@@ -64,5 +65,17 @@ public class Person {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setFamily(Family family) {
+        this.family = family;
+    }
+
+    public Set<CalendarEvent> getEvents() {
+        return events;
+    }
+
+    public void addEvent(CalendarEvent event) {
+        events.add(event);
     }
 }

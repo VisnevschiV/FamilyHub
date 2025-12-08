@@ -15,6 +15,9 @@ public class HomeController {
     @Autowired
     private PersonRepository repository;
 
+    @Autowired
+    private FamilyRepository familyRepository;
+
     @GetMapping("/")
     public String home() {
         return "Welcome to FamilyHub!";
@@ -31,4 +34,11 @@ public class HomeController {
     public Person addMember(@RequestBody Person newMember) {
         return repository.save(newMember);
     }
+
+    @GetMapping("/families")
+    public List<Family> getAllFamilies() {
+        return familyRepository.findAll();
+    }
+
+
 }
