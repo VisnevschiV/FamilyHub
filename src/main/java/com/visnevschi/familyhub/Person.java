@@ -1,5 +1,6 @@
 package com.visnevschi.familyhub;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -22,6 +23,7 @@ public class Person {
 
     @JoinColumn(name = "family_id")
     @ManyToOne
+    @JsonBackReference
     private Family family;
 
     // Standard Constructors
