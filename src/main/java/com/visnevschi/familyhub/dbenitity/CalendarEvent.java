@@ -1,4 +1,4 @@
-package com.visnevschi.familyhub;
+package com.visnevschi.familyhub.dbenitity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

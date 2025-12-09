@@ -1,5 +1,7 @@
-package com.visnevschi.familyhub;
+package com.visnevschi.familyhub.controller;
 
+import com.visnevschi.familyhub.dbenitity.CalendarEvent;
+import com.visnevschi.familyhub.repository.CalendarEventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

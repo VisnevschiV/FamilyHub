@@ -1,4 +1,4 @@
-package com.visnevschi.familyhub;
+package com.visnevschi.familyhub.dbenitity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;

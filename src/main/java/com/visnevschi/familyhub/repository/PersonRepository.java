@@ -1,5 +1,6 @@
-package com.visnevschi.familyhub;
+package com.visnevschi.familyhub.repository;
 
+import com.visnevschi.familyhub.dbenitity.Person;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

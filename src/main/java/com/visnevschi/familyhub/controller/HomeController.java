@@ -1,5 +1,9 @@
-package com.visnevschi.familyhub;
+package com.visnevschi.familyhub.controller;
 
+import com.visnevschi.familyhub.dbenitity.Family;
+import com.visnevschi.familyhub.dbenitity.Person;
+import com.visnevschi.familyhub.repository.FamilyRepository;
+import com.visnevschi.familyhub.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
