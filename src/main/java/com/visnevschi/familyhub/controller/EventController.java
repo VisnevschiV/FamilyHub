@@ -1,7 +1,7 @@
 package com.visnevschi.familyhub.controller;
 
 import com.visnevschi.familyhub.dbenitity.CalendarEvent;
-import com.visnevschi.familyhub.repository.CalendarEventRepository;
+import com.visnevschi.familyhub.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,15 +12,15 @@ import java.util.List;
 public class EventController {
 
     @Autowired
-    private CalendarEventRepository repository;
+    private EventService service;
 
     @GetMapping
     public List<CalendarEvent> getAllEvents() {
-        return repository.findAll();
+        return service.findAll();
     }
 
     @PostMapping
     public CalendarEvent createEvent(@RequestBody CalendarEvent event) {
-        return repository.save(event);
+        return service.save(event);
     }
 }

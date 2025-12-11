@@ -4,6 +4,7 @@ import com.visnevschi.familyhub.dbenitity.CalendarEvent;
 import com.visnevschi.familyhub.dbenitity.Family;
 import com.visnevschi.familyhub.dbenitity.Person;
 import com.visnevschi.familyhub.repository.FamilyRepository;
+import com.visnevschi.familyhub.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,8 @@ public class FamilyService {
     @Autowired
     private FamilyRepository familyRepository;
 
+    @Autowired // Add this to find people by ID
+    private PersonRepository personRepository;
 
     public List<Family> findAllFamilies() {
         return familyRepository.findAll();
@@ -36,11 +39,25 @@ public class FamilyService {
         familyRepository.deleteById(id);
     }
 
-    public void addMemberToFamily(long familyId, Person member){
+    public void addMemberToFamily(long familyId, long personId) {
         Family family = familyRepository.findById(familyId)
                 .orElseThrow(() -> new RuntimeException("Family not found"));
 
+        Person member = personRepository.findById(personId)
+                .orElseThrow(() -> new RuntimeException("Person not found"));
+
+        addMemberToFamily(familyId, member); // Reuse logic below
+    }
+
+    public void addMemberToFamily(long familyId, Person member) {
+        Family family = familyRepository.findById(familyId)
+                .orElseThrow(() -> new RuntimeException("Family not found"));
+
+        // 1. Link in Java (Both sides!)
+        member.setFamily(family); // <--- THIS WAS MISSING
         family.addMember(member);
+
+        // 2. Save
         familyRepository.save(family);
     }
 }

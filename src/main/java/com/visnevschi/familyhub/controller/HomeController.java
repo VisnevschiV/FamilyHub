@@ -50,4 +50,9 @@ public class HomeController {
         return familyService.addEventToFamily(id, event);
     }
 
+    @PostMapping("/families/{familyId}/members/{personId}")
+    public void addMemberToFamily(@PathVariable Long familyId, @PathVariable Long personId) {
+        // Now this works because we updated the Service above!
+        familyService.addMemberToFamily(familyId, personId);
+    }
 }
