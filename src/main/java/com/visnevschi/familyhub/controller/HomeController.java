@@ -1,14 +1,14 @@
 package com.visnevschi.familyhub.controller;
 
+import com.visnevschi.familyhub.dbenitity.CalendarEvent;
 import com.visnevschi.familyhub.dbenitity.Family;
 import com.visnevschi.familyhub.dbenitity.Person;
 import com.visnevschi.familyhub.repository.FamilyRepository;
 import com.visnevschi.familyhub.repository.PersonRepository;
+import com.visnevschi.familyhub.service.FamilyService;
+import com.visnevschi.familyhub.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,10 +17,10 @@ public class HomeController {
 
     // Inject the Repository
     @Autowired
-    private PersonRepository repository;
+    private PersonService personService;
 
     @Autowired
-    private FamilyRepository familyRepository;
+    private FamilyService familyService;
 
     @GetMapping("/")
     public String home() {
@@ -30,19 +30,24 @@ public class HomeController {
     // GET /members -> Returns a JSON list of all family members in the DB
     @GetMapping("/members")
     public List<Person> getAllMembers() {
-        return repository.findAll();
+        return personService.findAll();
     }
 
     // POST /members -> Adds a new member (received as JSON)
     @PostMapping("/members")
     public Person addMember(@RequestBody Person newMember) {
-        return repository.save(newMember);
+        return personService.save(newMember);
     }
 
     @GetMapping("/families")
     public List<Family> getAllFamilies() {
-        return familyRepository.findAll();
+
+        return familyService.findAllFamilies();
     }
 
+    @PostMapping("/families/{id}/events")
+    public Family addEventToFamily(@PathVariable Long id, @RequestBody CalendarEvent event) {
+        return familyService.addEventToFamily(id, event);
+    }
 
 }

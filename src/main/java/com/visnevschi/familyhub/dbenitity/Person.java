@@ -73,6 +73,10 @@ public class Person {
         this.family = family;
     }
 
+    public Family getFamily() {
+        return family;
+    }
+
     public Set<CalendarEvent> getEvents() {
         return events;
     }
