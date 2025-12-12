@@ -38,21 +38,4 @@ public class HomeController {
     public Person addMember(@RequestBody Person newMember) {
         return personService.save(newMember);
     }
-
-    @GetMapping("/families")
-    public List<Family> getAllFamilies() {
-
-        return familyService.findAllFamilies();
-    }
-
-    @PostMapping("/families/{id}/events")
-    public Family addEventToFamily(@PathVariable Long id, @RequestBody CalendarEvent event) {
-        return familyService.addEventToFamily(id, event);
-    }
-
-    @PostMapping("/families/{familyId}/members/{personId}")
-    public void addMemberToFamily(@PathVariable Long familyId, @PathVariable Long personId) {
-        // Now this works because we updated the Service above!
-        familyService.addMemberToFamily(familyId, personId);
-    }
 }

@@ -3,6 +3,7 @@ package com.visnevschi.familyhub.service;
 import com.visnevschi.familyhub.dbenitity.CalendarEvent;
 import com.visnevschi.familyhub.dbenitity.Family;
 import com.visnevschi.familyhub.dbenitity.Person;
+import com.visnevschi.familyhub.dto.event.EventCreateRequest;
 import com.visnevschi.familyhub.repository.FamilyRepository;
 import com.visnevschi.familyhub.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,27 @@ public class FamilyService {
         return familyRepository.save(family);
     }
 
+
+    public Family getByIdOrThrow(Long id) {
+        return familyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Family not found with id " + id));
+    }
+
+
     // This handles the logic of linking an Event to a Family
+    public Family addEventToFamily(Long familyId, EventCreateRequest request) {
+        Family family = getByIdOrThrow(familyId);
+
+        CalendarEvent event = new CalendarEvent(
+                request.title(),
+                request.description(),
+                request.dateTime()
+        );
+
+        family.addEvent(event);
+        return familyRepository.save(family);
+    }
+
     public Family addEventToFamily(Long familyId, CalendarEvent event) {
         return familyRepository.findById(familyId).map(family -> {
             family.addEvent(event);
