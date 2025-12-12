@@ -1,8 +1,11 @@
 package com.visnevschi.familyhub.controller;
 
-import com.visnevschi.familyhub.dbenitity.CalendarEvent;
+import com.visnevschi.familyhub.dto.Mapper;
+import com.visnevschi.familyhub.dto.event.EventCreateRequest;
+import com.visnevschi.familyhub.dto.event.EventResponse;
 import com.visnevschi.familyhub.service.EventService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,16 +14,22 @@ import java.util.List;
 @RequestMapping("/events") // This prefixes all URLs below with /events
 public class EventController {
 
-    @Autowired
-    private EventService service;
+    private final EventService service;
+    private final Mapper mapper;
+
+    public EventController(Mapper mapper, EventService service) {
+        this.mapper = mapper;
+        this.service = service;
+    }
 
     @GetMapping
-    public List<CalendarEvent> getAllEvents() {
-        return service.findAll();
+    public List<EventResponse> getAllEvents() {
+        return mapper.toResponse(service.findAll());
     }
 
     @PostMapping
-    public CalendarEvent createEvent(@RequestBody CalendarEvent event) {
-        return service.save(event);
+    @ResponseStatus(HttpStatus.CREATED)
+    public EventResponse createEvent(@Valid @RequestBody EventCreateRequest event) {
+        return mapper.toResponse(service.save(mapper.toEntity(event)));
     }
 }

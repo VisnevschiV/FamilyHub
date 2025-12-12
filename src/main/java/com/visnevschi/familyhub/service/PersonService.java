@@ -20,6 +20,9 @@ public class PersonService {
         return repository.findAll();
     }
 
+    public Person get(Long id) {
+        return repository.findById(id).orElseThrow(() -> new RuntimeException("Person not found"));
+    }
     public Person save(Person person) {
         return repository.save(person);
     }

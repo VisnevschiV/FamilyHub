@@ -13,6 +13,10 @@ public class EventService {
     @Autowired
     private CalendarEventRepository repository;
 
+    public CalendarEvent findById(Long id) {
+        return repository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+    }
+
     public List<CalendarEvent> findAll() {
         return repository.findAll();
     }

@@ -6,6 +6,7 @@ import com.visnevschi.familyhub.dbenitity.Person;
 import com.visnevschi.familyhub.dto.event.EventCreateRequest;
 import com.visnevschi.familyhub.dto.event.EventResponse;
 import com.visnevschi.familyhub.dto.family.FamilyDetailsResponse;
+import com.visnevschi.familyhub.dto.person.PersonCreateDto;
 import com.visnevschi.familyhub.dto.person.PersonGeneralDto;
 import org.springframework.stereotype.Component;
 
@@ -43,6 +44,14 @@ public class Mapper {
         );
     }
 
+    public Person toEntity(PersonGeneralDto dto) {
+        return new Person(dto.name(), dto.role(), dto.email());
+    }
+
+    public Person toEntity(PersonCreateDto dto) {
+        return new Person(dto.name(), dto.role(), dto.email());
+    }
+
     public EventResponse toResponse(CalendarEvent event) {
         return new EventResponse(
                 event.getId(),
@@ -52,6 +61,10 @@ public class Mapper {
         );
     }
 
+    public List<EventResponse> toResponse(List<CalendarEvent> events) {
+        return events.stream().map(this::toResponse).toList();
+    }
+
     public CalendarEvent toEntity(EventCreateRequest request) {
         return new CalendarEvent(
                 request.title(),
@@ -59,4 +72,6 @@ public class Mapper {
                 request.dateTime()
         );
     }
+
+
 }
