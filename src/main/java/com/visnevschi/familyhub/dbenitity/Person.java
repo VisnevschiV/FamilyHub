@@ -13,9 +13,11 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment (1, 2, 3...)
     private Long id;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    private UserAccount userAccount;
+
     private String name;
     private String role; // e.g., "Husband", "Wife", "Kid"
-    private String email;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "member_id")
@@ -26,14 +28,15 @@ public class Person {
     @JsonBackReference
     private Family family;
 
+
+
     // Standard Constructors
     public Person() {
     }
 
-    public Person(String name, String role, String email) {
+    public Person(String name, String role) {
         this.name = name;
         this.role = role;
-        this.email = email;
     }
 
     // Getters and Setters
@@ -59,14 +62,6 @@ public class Person {
 
     public void setRole(String role) {
         this.role = role;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public void setFamily(Family family) {

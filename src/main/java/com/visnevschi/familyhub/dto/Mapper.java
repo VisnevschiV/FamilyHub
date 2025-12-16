@@ -39,17 +39,16 @@ public class Mapper {
         return new PersonGeneralDto(
                 person.getId(),
                 person.getName(),
-                person.getRole(),
-                person.getEmail()
+                person.getRole()
         );
     }
 
     public Person toEntity(PersonGeneralDto dto) {
-        return new Person(dto.name(), dto.role(), dto.email());
+        return new Person(dto.name(), dto.role());
     }
 
     public Person toEntity(PersonCreateDto dto) {
-        return new Person(dto.name(), dto.role(), dto.email());
+        return new Person(dto.name(), dto.role());
     }
 
     public EventResponse toResponse(CalendarEvent event) {
