@@ -2,15 +2,24 @@ package com.visnevschi.familyhub.dto.UserAccount;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
-public record UserAccountDto(
-
-        @Email
+public record RegisterRequest (
         @NotBlank
+        @Email
+        @Size(max = 320)
         String email,
+
         @NotBlank
         @Size(min = 8, max = 100)
-        String password
-){}
+        String password,
+
+        @NotBlank
+        @Size(max = 200)
+        String name,
+
+        @NotBlank
+        @Size(max = 100)
+        String role
+){
+}

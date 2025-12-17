@@ -13,7 +13,7 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment (1, 2, 3...)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "person")
     private UserAccount userAccount;
 
     private String name;
@@ -78,5 +78,13 @@ public class Person {
 
     public void addEvent(CalendarEvent event) {
         events.add(event);
+    }
+
+    public UserAccount getUserAccount() {
+        return userAccount;
+    }
+
+    public void setUserAccount(UserAccount userAccount) {
+        this.userAccount = userAccount;
     }
 }

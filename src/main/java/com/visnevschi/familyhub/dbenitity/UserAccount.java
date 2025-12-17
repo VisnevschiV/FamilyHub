@@ -18,9 +18,12 @@ public class UserAccount {
     @Column(nullable = false)
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, optional = false)
+    @JoinColumn(name = "person_id", nullable = false, unique = true)
     private Person person;
 
+
+    public Long getId() { return id; }
     public String getEmail() {
         return email;
     }
@@ -36,4 +39,7 @@ public class UserAccount {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public Person getPerson() { return person; }
+    public void setPerson(Person person) { this.person = person; }
 }
