@@ -8,6 +8,7 @@ import java.util.List;
 public record FamilyDetailsResponse(
         Long id,
         String name,
+        String joinCode,
         List<PersonGeneralDto> participants,
         List<EventResponse> events
 ) {

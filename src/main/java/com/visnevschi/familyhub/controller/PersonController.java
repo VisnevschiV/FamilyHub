@@ -27,10 +27,6 @@ public class PersonController {
         return mapper.toGeneral(personService.get(id));
     }
 
-    @GetMapping("/all")
-    public Iterable<PersonGeneralDto> getAllPersons(){
-        return personService.findAll().stream().map(mapper::toGeneral).toList();
-    }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

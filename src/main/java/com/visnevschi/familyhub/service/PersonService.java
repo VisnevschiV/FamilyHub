@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Set;
 
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
 @Service
 public class PersonService {
 
@@ -22,6 +24,10 @@ public class PersonService {
 
     public Person get(Long id) {
         return repository.findById(id).orElseThrow(() -> new RuntimeException("Person not found"));
+    }
+
+    public Person get(String email){
+        return repository.findByEmail(email).orElseThrow(() -> new RuntimeException("Person not found"));
     }
     public Person save(Person person) {
         return repository.save(person);

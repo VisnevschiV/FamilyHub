@@ -20,6 +20,9 @@ public class Family {
     @JoinColumn(name = "family_id")
     private Set<CalendarEvent> events = new HashSet<>();
 
+    @Column(unique = true, nullable = false, length = 8)
+    private String joinCode;
+
     public Family() {}
 
     public Family(String name) {
@@ -43,4 +46,7 @@ public class Family {
     public void addMember(Person member) { members.add(member); }
 
     public void addEvent(CalendarEvent event) { events.add(event); }
+
+    public String getJoinCode() { return joinCode; }
+    public void setJoinCode(String joinCode) { this.joinCode = joinCode; }
 }

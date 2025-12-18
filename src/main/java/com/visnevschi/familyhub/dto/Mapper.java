@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class Mapper {
@@ -19,7 +21,6 @@ public class Mapper {
     public FamilyDetailsResponse toDetails(Family family) {
         List<PersonGeneralDto> participants = family.getMembers().stream()
                 .map(this::toGeneral)
-                .sorted(Comparator.comparing(PersonGeneralDto::id, Comparator.nullsLast(Long::compareTo)))
                 .toList();
 
         List<EventResponse> events = family.getEvents().stream()
@@ -30,6 +31,7 @@ public class Mapper {
         return new FamilyDetailsResponse(
                 family.getId(),
                 family.getName(),
+                family.getJoinCode(),
                 participants,
                 events
         );
@@ -37,10 +39,18 @@ public class Mapper {
 
     public PersonGeneralDto toGeneral(Person person) {
         return new PersonGeneralDto(
-                person.getId(),
                 person.getName(),
                 person.getRole()
         );
+    }
+
+    public Set<PersonGeneralDto> toGeneral(Set<Person> people) {
+        if (people == null) {
+            return Set.of();
+        }
+        return people.stream()
+                .map(this::toGeneral)
+                .collect(Collectors.toSet());
     }
 
     public Person toEntity(PersonGeneralDto dto) {

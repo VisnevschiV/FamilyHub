@@ -22,11 +22,6 @@ public class EventController {
         this.service = service;
     }
 
-    @GetMapping
-    public List<EventResponse> getAllEvents() {
-        return mapper.toResponse(service.findAll());
-    }
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EventResponse createEvent(@Valid @RequestBody EventCreateRequest event) {

@@ -66,6 +66,7 @@ public class Person {
 
     public void setFamily(Family family) {
         this.family = family;
+        family.getMembers().add(this);
     }
 
     public Family getFamily() {
