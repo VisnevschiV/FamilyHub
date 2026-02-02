@@ -26,9 +26,6 @@ public class PersonService {
         return repository.findById(id).orElseThrow(() -> new RuntimeException("Person not found"));
     }
 
-    public Person get(String email){
-        return repository.findByEmail(email).orElseThrow(() -> new RuntimeException("Person not found"));
-    }
     public Person save(Person person) {
         return repository.save(person);
     }
