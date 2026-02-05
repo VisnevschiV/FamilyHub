@@ -2,6 +2,7 @@ package com.visnevschi.familyhub.controller;
 
 
 import com.visnevschi.familyhub.dto.UserAccount.LoginResponse;
+import com.visnevschi.familyhub.dto.UserAccount.RefreshRequest;
 import com.visnevschi.familyhub.dto.UserAccount.RegisterRequest;
 import com.visnevschi.familyhub.dto.UserAccount.UserAccountDto;
 import com.visnevschi.familyhub.dto.UserAccount.UserDataDto;
@@ -18,11 +19,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-    private final TokenService tokenService;
 
-    public AuthController(AuthService authService, TokenService tokenService) {
+    public AuthController(AuthService authService) {
         this.authService = authService;
-        this.tokenService = tokenService;
     }
 
     @PostMapping("/register")
@@ -38,10 +37,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody UserAccountDto userAccountDto){
+        return authService.login(userAccountDto.email(), userAccountDto.password());
+    }
 
-        String token = authService.login(userAccountDto.email(), userAccountDto.password());
-        return new LoginResponse(token, tokenService.getTtlSeconds());
-
+    @PostMapping("/refresh")
+    public LoginResponse refresh(@Valid @RequestBody RefreshRequest request) {
+        return authService.refresh(request.refreshToken());
     }
 
     @GetMapping("/me")

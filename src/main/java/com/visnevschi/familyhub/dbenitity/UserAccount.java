@@ -1,8 +1,8 @@
 package com.visnevschi.familyhub.dbenitity;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import java.time.Instant;
 
 @Entity
 public class UserAccount {
@@ -22,6 +22,12 @@ public class UserAccount {
     @JoinColumn(name = "person_id", nullable = false, unique = true)
     private Person person;
 
+    // Refresh token fields
+    @Column(name = "refresh_token")
+    private String refreshToken;
+
+    @Column(name = "refresh_token_expiry")
+    private Instant refreshTokenExpiry;
 
     public Long getId() { return id; }
     public String getEmail() {
@@ -42,4 +48,20 @@ public class UserAccount {
 
     public Person getPerson() { return person; }
     public void setPerson(Person person) { this.person = person; }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public Instant getRefreshTokenExpiry() {
+        return refreshTokenExpiry;
+    }
+
+    public void setRefreshTokenExpiry(Instant refreshTokenExpiry) {
+        this.refreshTokenExpiry = refreshTokenExpiry;
+    }
 }
