@@ -1,17 +1,18 @@
 package com.visnevschi.familyhub.service;
 
-import com.visnevschi.familyhub.dbenitity.Person;
-import com.visnevschi.familyhub.dbenitity.UserAccount;
-import com.visnevschi.familyhub.dto.UserAccount.UserDataDto;
-import com.visnevschi.familyhub.dto.UserAccount.LoginResponse;
-import com.visnevschi.familyhub.repository.UserAccountRepository;
+import java.time.Instant;
+import java.util.Locale;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.util.Locale;
-import java.util.UUID;
+import com.visnevschi.familyhub.dbenitity.Person;
+import com.visnevschi.familyhub.dbenitity.UserAccount;
+import com.visnevschi.familyhub.dto.UserAccount.LoginResponse;
+import com.visnevschi.familyhub.dto.UserAccount.UserDataDto;
+import com.visnevschi.familyhub.repository.UserAccountRepository;
 
 @Service
 public class AuthService {
