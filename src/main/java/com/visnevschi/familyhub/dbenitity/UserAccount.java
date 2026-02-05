@@ -26,7 +26,7 @@ public class UserAccount {
     @Column(nullable = false)
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL, optional = false)
+    @OneToOne(cascade = CascadeType.ALL, optional = false, fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "person_id", nullable = false, unique = true)
     private Person person;
 

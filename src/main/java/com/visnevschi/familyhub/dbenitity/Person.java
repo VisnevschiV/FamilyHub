@@ -1,10 +1,19 @@
 package com.visnevschi.familyhub.dbenitity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 
 @Entity // This tells Hibernate: "Make a table out of this class"
 public class Person {
@@ -24,7 +33,7 @@ public class Person {
     private Set<CalendarEvent> events = new HashSet<>();
 
     @JoinColumn(name = "family_id")
-    @ManyToOne
+    @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JsonBackReference
     private Family family;
 
