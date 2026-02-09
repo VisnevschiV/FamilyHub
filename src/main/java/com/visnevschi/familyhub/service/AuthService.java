@@ -8,10 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.visnevschi.familyhub.dbenitity.Person;
 import com.visnevschi.familyhub.dbenitity.UserAccount;
 import com.visnevschi.familyhub.dto.UserAccount.LoginResponse;
-import com.visnevschi.familyhub.dto.UserAccount.UserDataDto;
 import com.visnevschi.familyhub.repository.UserAccountRepository;
 
 @Service
@@ -52,14 +50,9 @@ public class AuthService {
             throw new IllegalArgumentException("Email already in use");
         }
 
-        Person person = new Person(name, role);
-
         UserAccount userAccount = new UserAccount();
         userAccount.setEmail(normalizedEmail);
         userAccount.setPassword(passwordEncoder.encode(rawPassword));
-        userAccount.setPerson(person);
-
-        person.setUserAccount(userAccount);
 
         userAccountrepository.save(userAccount);
     }
@@ -119,26 +112,4 @@ public class AuthService {
         return new LoginResponse(accessToken, tokenService.getTtlSeconds(), newRefreshToken, refreshTtlSeconds);
     }
 
-    public UserDataDto meByEmail(String email){
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email is required");
-        }
-
-        email = email.trim().toLowerCase(Locale.ROOT);
-
-        UserAccount user = userAccountrepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Long familyId = (user.getPerson().getFamily() == null)
-                ? null
-                : user.getPerson().getFamily().getId();
-
-        return new UserDataDto(
-                user.getId(),
-                user.getEmail(),
-                user.getPerson().getName(),
-                user.getPerson().getRole(),
-                familyId
-        );
-    }
 }
