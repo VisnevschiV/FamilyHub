@@ -4,16 +4,21 @@ import java.time.Instant;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.visnevschi.familyhub.dbenitity.UserAccount;
 import com.visnevschi.familyhub.dto.UserAccount.LoginResponse;
+import com.visnevschi.familyhub.exception.InvalidCredentialsException;
 import com.visnevschi.familyhub.repository.UserAccountRepository;
 
 @Service
 public class AuthService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     private UserAccountRepository userAccountrepository;
     private final PasswordEncoder passwordEncoder;
@@ -66,16 +71,16 @@ public class AuthService {
         }
 
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-
         UserAccount account = userAccountrepository.findByEmail(normalizedEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+                .orElseThrow(() -> new InvalidCredentialsException("Wrong email"));
 
         if (!passwordEncoder.matches(rawPassword, account.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new InvalidCredentialsException("Wrong email/password");
         }
 
         String accessToken = tokenService.createToken(account);
 
+        
         String refreshToken = UUID.randomUUID().toString();
         Instant refreshExpiry = Instant.now().plusSeconds(refreshTtlSeconds);
 
