@@ -1,15 +1,15 @@
 package com.visnevschi.familyhub.service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Locale;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.visnevschi.familyhub.dbenitity.Gender;
 import com.visnevschi.familyhub.dbenitity.UserAccount;
 import com.visnevschi.familyhub.dto.UserAccount.LoginResponse;
 import com.visnevschi.familyhub.exception.InvalidCredentialsException;
@@ -18,24 +18,25 @@ import com.visnevschi.familyhub.repository.UserAccountRepository;
 @Service
 public class AuthService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
-
     private UserAccountRepository userAccountrepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final PersonaService personaService;
     private final long refreshTtlSeconds;
 
     public AuthService(UserAccountRepository userAccountrepository,
                        PasswordEncoder passwordEncoder,
                        TokenService tokenService,
+                       PersonaService personaService,
                        @Value("${app.jwt.refresh-ttl-seconds}") long refreshTtlSeconds) {
         this.userAccountrepository = userAccountrepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
+        this.personaService = personaService;
         this.refreshTtlSeconds = refreshTtlSeconds;
     }
 
-    public void register(String email, String rawPassword, String name, String role) {
+    public void register(String email, String rawPassword, String name, LocalDate birthday, Gender gender) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email is required");
         }
@@ -45,8 +46,11 @@ public class AuthService {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Name is required");
         }
-        if (role == null || role.isBlank()) {
-            throw new IllegalArgumentException("Role is required");
+        if (birthday == null) {
+            throw new IllegalArgumentException("Birthday is required");
+        }
+        if (gender == null) {
+            throw new IllegalArgumentException("Gender is required");
         }
 
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
@@ -59,7 +63,8 @@ public class AuthService {
         userAccount.setEmail(normalizedEmail);
         userAccount.setPassword(passwordEncoder.encode(rawPassword));
 
-        userAccountrepository.save(userAccount);
+        UserAccount savedAccount = userAccountrepository.save(userAccount);
+        personaService.createForUser(savedAccount, name.trim(), birthday, gender);
     }
 
     public LoginResponse login(String email, String rawPassword) {

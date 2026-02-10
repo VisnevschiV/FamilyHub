@@ -4,9 +4,11 @@ import java.time.Instant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Email;
 
 @Entity
@@ -22,6 +24,9 @@ public class UserAccount {
 
     @Column(nullable = false)
     private String password;
+
+    @OneToOne(mappedBy = "userAccount", fetch = FetchType.LAZY)
+    private Persona persona;
 
     // Refresh token fields
     @Column(name = "refresh_token")
@@ -45,6 +50,14 @@ public class UserAccount {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Persona getPersona() {
+        return persona;
+    }
+
+    public void setPersona(Persona persona) {
+        this.persona = persona;
     }
 
 

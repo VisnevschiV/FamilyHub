@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.visnevschi.familyhub.dto.UserAccount.LoginResponse;
 import com.visnevschi.familyhub.dto.UserAccount.RefreshRequest;
 import com.visnevschi.familyhub.dto.UserAccount.RegisterRequest;
+import com.visnevschi.familyhub.dto.UserAccount.RegisterResponse;
 import com.visnevschi.familyhub.dto.UserAccount.UserAccountDto;
 import com.visnevschi.familyhub.service.AuthService;
 
@@ -28,13 +29,15 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public void register(@Valid @RequestBody RegisterRequest registerRequest){
+    public RegisterResponse register(@Valid @RequestBody RegisterRequest registerRequest){
         authService.register(
                 registerRequest.email(),
                 registerRequest.password(),
                 registerRequest.name(),
-                registerRequest.role()
+            registerRequest.birthday(),
+                registerRequest.gender()
         );
+        return new RegisterResponse("Registration successful");
     }
 
     @PostMapping("/login")

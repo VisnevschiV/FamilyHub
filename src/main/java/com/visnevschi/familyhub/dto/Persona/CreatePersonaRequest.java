@@ -1,23 +1,13 @@
-package com.visnevschi.familyhub.dto.UserAccount;
+package com.visnevschi.familyhub.dto.Persona;
 
 import com.visnevschi.familyhub.dbenitity.Gender;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 
-public record RegisterRequest (
-        @NotBlank
-        @Email
-        @Size(max = 320)
-        String email,
-
-        @NotBlank
-        @Size(min = 8, max = 100)
-        String password,
-
+public record CreatePersonaRequest(
         @NotBlank
         @Size(max = 200)
         String name,
@@ -27,6 +17,9 @@ public record RegisterRequest (
         java.time.LocalDate birthday,
 
         @NotNull
-        Gender gender
-){
+        Gender gender,
+
+        @Size(max = 500)
+        String avatarUrl
+) {
 }
