@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .bearerTokenResolver(bearerTokenResolver)
                         .jwt(Customizer.withDefaults())
                 )
+                .cors(Customizer.withDefaults())
                 .build();
     }
 
