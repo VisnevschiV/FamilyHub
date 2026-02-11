@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.visnevschi.familyhub.dbenitity.Gender;
 import com.visnevschi.familyhub.dbenitity.UserAccount;
-import com.visnevschi.familyhub.dto.UserAccount.LoginResponse;
+import com.visnevschi.familyhub.dto.UserAccount.AuthTokens;
 import com.visnevschi.familyhub.exception.InvalidCredentialsException;
 import com.visnevschi.familyhub.repository.UserAccountRepository;
 
@@ -67,7 +67,7 @@ public class AuthService {
         personaService.createForUser(savedAccount, name.trim(), birthday, gender);
     }
 
-    public LoginResponse login(String email, String rawPassword) {
+    public AuthTokens login(String email, String rawPassword) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email is required");
         }
@@ -93,10 +93,10 @@ public class AuthService {
         account.setRefreshTokenExpiry(refreshExpiry);
         userAccountrepository.save(account);
 
-        return new LoginResponse(accessToken, tokenService.getTtlSeconds(), refreshToken, refreshTtlSeconds);
+        return new AuthTokens(accessToken, tokenService.getTtlSeconds(), refreshToken, refreshTtlSeconds);
     }
 
-    public LoginResponse refresh(String refreshToken) {
+    public AuthTokens refresh(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new IllegalArgumentException("Refresh token is required");
         }
@@ -119,7 +119,7 @@ public class AuthService {
         account.setRefreshTokenExpiry(newExpiry);
         userAccountrepository.save(account);
 
-        return new LoginResponse(accessToken, tokenService.getTtlSeconds(), newRefreshToken, refreshTtlSeconds);
+        return new AuthTokens(accessToken, tokenService.getTtlSeconds(), newRefreshToken, refreshTtlSeconds);
     }
 
 }
