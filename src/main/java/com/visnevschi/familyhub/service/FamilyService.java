@@ -2,7 +2,6 @@ package com.visnevschi.familyhub.service;
 
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +20,8 @@ import com.visnevschi.familyhub.repository.PersonaRepository;
 @Transactional
 public class FamilyService {
 
-    private static final int CODE_BYTES = 18;
+    private static final int CODE_LENGTH = 6;
+    private static final String CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     private final PersonaRepository personaRepository;
     private final FamilyRepository familyRepository;
@@ -137,8 +137,10 @@ public class FamilyService {
     }
 
     private String generateCode() {
-        byte[] bytes = new byte[CODE_BYTES];
-        secureRandom.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        StringBuilder code = new StringBuilder(CODE_LENGTH);
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            code.append(CODE_CHARS.charAt(secureRandom.nextInt(CODE_CHARS.length())));
+        }
+        return code.toString();
     }
 }
