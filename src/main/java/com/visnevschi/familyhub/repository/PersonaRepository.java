@@ -10,5 +10,7 @@ import com.visnevschi.familyhub.dbenitity.Persona;
 @Repository
 public interface PersonaRepository extends JpaRepository<Persona, Long> {
     Optional<Persona> findByUserAccountId(Long userAccountId);
+    Optional<Persona> findByUserAccountEmail(String email);
     boolean existsByUserAccountId(Long userAccountId);
+    long countByFamilyId(Long familyId);
 }

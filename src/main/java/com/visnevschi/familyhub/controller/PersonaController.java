@@ -9,10 +9,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.visnevschi.familyhub.dbenitity.Family;
 import com.visnevschi.familyhub.dbenitity.Persona;
+import com.visnevschi.familyhub.dto.Family.FamilyResponse;
 import com.visnevschi.familyhub.dto.Persona.CreatePersonaRequest;
 import com.visnevschi.familyhub.dto.Persona.PersonaResponse;
 import com.visnevschi.familyhub.dto.Persona.UpdatePersonaRequest;
+import com.visnevschi.familyhub.service.FamilyService;
 import com.visnevschi.familyhub.service.PersonaService;
 
 import jakarta.validation.Valid;
@@ -22,9 +25,12 @@ import jakarta.validation.Valid;
 public class PersonaController {
 
     private final PersonaService personaService;
+    private final FamilyService familyService;
 
-    public PersonaController(PersonaService personaService) {
+    public PersonaController(PersonaService personaService,
+                             FamilyService familyService) {
         this.personaService = personaService;
+        this.familyService = familyService;
     }
 
     @PostMapping("/me")
@@ -48,12 +54,20 @@ public class PersonaController {
     }
 
     private PersonaResponse toResponse(Persona persona) {
+        FamilyResponse familyResponse = null;
+        Family family = persona.getFamily();
+        if (family != null) {
+            long members = familyService.countMembers(family.getId());
+            familyResponse = new FamilyResponse(family.getId(), family.getName(), members);
+        }
+
         return new PersonaResponse(
                 persona.getId(),
                 persona.getName(),
                 persona.getBirthday(),
                 persona.getGender(),
-                persona.getAvatarUrl()
+                persona.getAvatarUrl(),
+                familyResponse
         );
     }
 }
