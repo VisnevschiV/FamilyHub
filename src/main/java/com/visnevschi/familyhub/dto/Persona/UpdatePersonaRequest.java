@@ -1,6 +1,6 @@
 package com.visnevschi.familyhub.dto.Persona;
 
-import com.visnevschi.familyhub.dbenitity.Gender;
+import com.visnevschi.familyhub.utils.Gender;
 
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;

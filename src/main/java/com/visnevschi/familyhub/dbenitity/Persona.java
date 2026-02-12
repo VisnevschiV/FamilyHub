@@ -2,6 +2,8 @@ package com.visnevschi.familyhub.dbenitity;
 
 import java.time.LocalDate;
 
+import com.visnevschi.familyhub.utils.Gender;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

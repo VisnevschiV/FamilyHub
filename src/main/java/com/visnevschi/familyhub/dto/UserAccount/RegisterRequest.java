@@ -1,6 +1,6 @@
 package com.visnevschi.familyhub.dto.UserAccount;
 
-import com.visnevschi.familyhub.dbenitity.Gender;
+import com.visnevschi.familyhub.utils.Gender;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

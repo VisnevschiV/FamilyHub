@@ -5,7 +5,6 @@ import java.util.Locale;
 
 import org.springframework.stereotype.Service;
 
-import com.visnevschi.familyhub.dbenitity.Gender;
 import com.visnevschi.familyhub.dbenitity.Persona;
 import com.visnevschi.familyhub.dbenitity.UserAccount;
 import com.visnevschi.familyhub.dto.Persona.CreatePersonaRequest;
@@ -13,6 +12,7 @@ import com.visnevschi.familyhub.dto.Persona.UpdatePersonaRequest;
 import com.visnevschi.familyhub.exception.NotFoundException;
 import com.visnevschi.familyhub.repository.PersonaRepository;
 import com.visnevschi.familyhub.repository.UserAccountRepository;
+import com.visnevschi.familyhub.utils.Gender;
 
 @Service
 public class PersonaService {

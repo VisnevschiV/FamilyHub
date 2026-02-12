@@ -1,4 +1,4 @@
-package com.visnevschi.familyhub.dbenitity;
+package com.visnevschi.familyhub.utils;
 
 public enum Gender {
     MALE,

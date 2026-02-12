@@ -1,6 +1,6 @@
 package com.visnevschi.familyhub.dto.Persona;
 
-import com.visnevschi.familyhub.dbenitity.Gender;
+import com.visnevschi.familyhub.utils.Gender;
 
 public record PersonaResponse(
         Long id,

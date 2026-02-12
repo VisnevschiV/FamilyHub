@@ -9,11 +9,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.visnevschi.familyhub.dbenitity.Gender;
 import com.visnevschi.familyhub.dbenitity.UserAccount;
 import com.visnevschi.familyhub.dto.UserAccount.AuthTokens;
 import com.visnevschi.familyhub.exception.InvalidCredentialsException;
 import com.visnevschi.familyhub.repository.UserAccountRepository;
+import com.visnevschi.familyhub.utils.Gender;
 
 @Service
 public class AuthService {
