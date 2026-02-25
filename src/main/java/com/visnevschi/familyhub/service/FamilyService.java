@@ -114,6 +114,7 @@ public class FamilyService {
         return personaRepository.countByFamilyId(familyId);
     }
 
+    //TODO: this belongs in PersonaService
     private Persona getPersonaForEmail(String email) {
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
         return personaRepository.findByUserAccountEmail(normalizedEmail)
@@ -142,5 +143,11 @@ public class FamilyService {
             code.append(CODE_CHARS.charAt(secureRandom.nextInt(CODE_CHARS.length())));
         }
         return code.toString();
+    }
+
+    public Long getFamilyIdForUser(String email) {
+        Persona persona = getPersonaForEmail(email);
+        Family family = requireFamily(persona);
+        return family.getId();
     }
 }
