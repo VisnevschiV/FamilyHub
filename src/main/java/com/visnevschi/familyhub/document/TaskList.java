@@ -2,6 +2,8 @@ package com.visnevschi.familyhub.document;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -62,6 +64,17 @@ public class TaskList {
         if (task == null) {
             return;
         }
+        if (task.getId() == null || task.getId().isBlank()) {
+            task.setId(UUID.randomUUID().toString());
+        }
         tasks.add(task);
+    }
+
+    public void removeTask(String taskId) {
+        tasks.removeIf(t -> Objects.equals(t.getId(), taskId));
+    }
+
+    public Task getTask(String taskId) {
+        return tasks.stream().filter(t -> Objects.equals(t.getId(), taskId)).findFirst().orElse(null);
     }
 }

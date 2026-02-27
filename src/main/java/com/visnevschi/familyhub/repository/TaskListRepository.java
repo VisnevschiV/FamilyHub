@@ -12,4 +12,5 @@ public interface TaskListRepository extends MongoRepository<TaskList, String> {
 
     List<TaskList> findAllByFamilyId(Long familyId);
     long deleteByIdAndFamilyId(String id, Long familyId);
+    TaskList findByIdAndFamilyId(String id, Long familyId);
 }

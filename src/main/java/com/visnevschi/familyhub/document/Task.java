@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class Task {
 
     @Id
-    private Integer id;
+    private String id;
 
     @Field("name")
     private String name;
@@ -17,17 +17,17 @@ public class Task {
     protected Task() {
     }
 
-    public Task(Integer id, String name, boolean completed) {
+    public Task(String id, String name, boolean completed) {
         this.id = id;
         this.name = name;
         this.completed = completed;
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 

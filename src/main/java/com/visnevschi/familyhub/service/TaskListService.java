@@ -38,4 +38,14 @@ public class TaskListService {
             throw new NotFoundException("Task list not found");
         }
     }
+
+    public void modifyTaskListName(String listId, String newName, String userEmail) {
+        Long familyId = familyService.getFamilyIdForUser(userEmail);
+        TaskList taskList = taskListRepository.findByIdAndFamilyId(listId, familyId);
+        if (taskList == null) {
+            throw new NotFoundException("Task list not found");
+        }
+        taskList.setName(newName);
+        taskListRepository.save(taskList);
+    }
 }
