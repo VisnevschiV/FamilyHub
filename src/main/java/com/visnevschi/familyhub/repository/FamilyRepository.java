@@ -1,11 +1,10 @@
 package com.visnevschi.familyhub.repository;
 
-import com.visnevschi.familyhub.dbenitity.Family;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import com.visnevschi.familyhub.dbenitity.Family;
 
+@Repository
 public interface FamilyRepository extends JpaRepository<Family, Long> {
-
-    Optional<Family> findByJoinCode(String joinCode);
 }

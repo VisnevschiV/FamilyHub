@@ -1,23 +1,27 @@
 package com.visnevschi.familyhub.controller;
 
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.visnevschi.familyhub.dto.UserAccount.AuthTokens;
 import com.visnevschi.familyhub.dto.UserAccount.LoginResponse;
 import com.visnevschi.familyhub.dto.UserAccount.RefreshRequest;
 import com.visnevschi.familyhub.dto.UserAccount.RegisterRequest;
+import com.visnevschi.familyhub.dto.UserAccount.RegisterResponse;
 import com.visnevschi.familyhub.dto.UserAccount.UserAccountDto;
-import com.visnevschi.familyhub.dto.UserAccount.UserDataDto;
 import com.visnevschi.familyhub.service.AuthService;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 @RestController
@@ -25,34 +29,95 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final AuthService authService;
+    private final String accessCookieName;
+    private final String refreshCookieName;
+    private final boolean cookieSecure;
+    private final String cookieSameSite;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService,
+                          @Value("${app.jwt.cookie-access-name:access_token}") String accessCookieName,
+                          @Value("${app.jwt.cookie-refresh-name:refresh_token}") String refreshCookieName,
+                          @Value("${app.jwt.cookie-secure:false}") boolean cookieSecure,
+                          @Value("${app.jwt.cookie-same-site:Lax}") String cookieSameSite) {
         this.authService = authService;
+        this.accessCookieName = accessCookieName;
+        this.refreshCookieName = refreshCookieName;
+        this.cookieSecure = cookieSecure;
+        this.cookieSameSite = cookieSameSite;
     }
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public void register(@Valid @RequestBody RegisterRequest registerRequest){
+    public RegisterResponse register(@Valid @RequestBody RegisterRequest registerRequest){
         authService.register(
                 registerRequest.email(),
                 registerRequest.password(),
                 registerRequest.name(),
-                registerRequest.role()
+            registerRequest.birthday(),
+                registerRequest.gender()
         );
+        return new RegisterResponse("Registration successful");
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@Valid @RequestBody UserAccountDto userAccountDto){
-        return authService.login(userAccountDto.email(), userAccountDto.password());
+    public LoginResponse login(@Valid @RequestBody UserAccountDto userAccountDto,
+                               HttpServletResponse response){
+        AuthTokens tokens = authService.login(userAccountDto.email(), userAccountDto.password());
+        setAuthCookies(response, tokens);
+        return new LoginResponse(tokens.ttlSeconds(), tokens.refreshTtlSeconds());
     }
 
     @PostMapping("/refresh")
-    public LoginResponse refresh(@Valid @RequestBody RefreshRequest request) {
-        return authService.refresh(request.refreshToken());
+    public LoginResponse refresh(@RequestBody(required = false) RefreshRequest request,
+                                 HttpServletRequest httpRequest,
+                                 HttpServletResponse response) {
+        String refreshToken = resolveRefreshToken(httpRequest, request);
+        AuthTokens tokens = authService.refresh(refreshToken);
+        setAuthCookies(response, tokens);
+        return new LoginResponse(tokens.ttlSeconds(), tokens.refreshTtlSeconds());
     }
 
-    @GetMapping("/me")
-    public UserDataDto me(@AuthenticationPrincipal Jwt jwt) {
-        return authService.meByEmail(jwt.getSubject());
+    private void setAuthCookies(HttpServletResponse response, AuthTokens tokens) {
+        ResponseCookie accessCookie = ResponseCookie.from(accessCookieName, tokens.accessToken())
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(tokens.ttlSeconds())
+                .sameSite(cookieSameSite)
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from(refreshCookieName, tokens.refreshToken())
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/auth/refresh")
+                .maxAge(tokens.refreshTtlSeconds())
+                .sameSite(cookieSameSite)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+    }
+
+    private String resolveRefreshToken(HttpServletRequest request, RefreshRequest body) {
+        String cookieToken = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (refreshCookieName.equals(cookie.getName())) {
+                    cookieToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (cookieToken != null && !cookieToken.isBlank()) {
+            return cookieToken;
+        }
+
+        if (body != null && body.refreshToken() != null && !body.refreshToken().isBlank()) {
+            return body.refreshToken();
+        }
+
+        return null;
     }
 }

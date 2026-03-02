@@ -1,11 +1,11 @@
-package com.visnevschi.familyhub.dto.family;
+package com.visnevschi.familyhub.dto.Family;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record JoinFamilyRequest(
         @NotBlank
-        @Size(min = 6, max = 10)
-        String joinCode
+        @Size(max = 64)
+        String code
 ) {
 }

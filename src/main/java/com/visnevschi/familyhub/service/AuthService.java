@@ -1,6 +1,7 @@
 package com.visnevschi.familyhub.service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -8,11 +9,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.visnevschi.familyhub.dbenitity.Person;
 import com.visnevschi.familyhub.dbenitity.UserAccount;
-import com.visnevschi.familyhub.dto.UserAccount.LoginResponse;
-import com.visnevschi.familyhub.dto.UserAccount.UserDataDto;
+import com.visnevschi.familyhub.dto.UserAccount.AuthTokens;
+import com.visnevschi.familyhub.exception.InvalidCredentialsException;
 import com.visnevschi.familyhub.repository.UserAccountRepository;
+import com.visnevschi.familyhub.utils.Gender;
 
 @Service
 public class AuthService {
@@ -20,19 +21,22 @@ public class AuthService {
     private UserAccountRepository userAccountrepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final PersonaService personaService;
     private final long refreshTtlSeconds;
 
     public AuthService(UserAccountRepository userAccountrepository,
                        PasswordEncoder passwordEncoder,
                        TokenService tokenService,
+                       PersonaService personaService,
                        @Value("${app.jwt.refresh-ttl-seconds}") long refreshTtlSeconds) {
         this.userAccountrepository = userAccountrepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
+        this.personaService = personaService;
         this.refreshTtlSeconds = refreshTtlSeconds;
     }
 
-    public void register(String email, String rawPassword, String name, String role) {
+    public void register(String email, String rawPassword, String name, LocalDate birthday, Gender gender) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email is required");
         }
@@ -42,8 +46,11 @@ public class AuthService {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Name is required");
         }
-        if (role == null || role.isBlank()) {
-            throw new IllegalArgumentException("Role is required");
+        if (birthday == null) {
+            throw new IllegalArgumentException("Birthday is required");
+        }
+        if (gender == null) {
+            throw new IllegalArgumentException("Gender is required");
         }
 
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
@@ -52,19 +59,15 @@ public class AuthService {
             throw new IllegalArgumentException("Email already in use");
         }
 
-        Person person = new Person(name, role);
-
         UserAccount userAccount = new UserAccount();
         userAccount.setEmail(normalizedEmail);
         userAccount.setPassword(passwordEncoder.encode(rawPassword));
-        userAccount.setPerson(person);
 
-        person.setUserAccount(userAccount);
-
-        userAccountrepository.save(userAccount);
+        UserAccount savedAccount = userAccountrepository.save(userAccount);
+        personaService.createForUser(savedAccount, name.trim(), birthday, gender);
     }
 
-    public LoginResponse login(String email, String rawPassword) {
+    public AuthTokens login(String email, String rawPassword) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email is required");
         }
@@ -73,16 +76,16 @@ public class AuthService {
         }
 
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-
         UserAccount account = userAccountrepository.findByEmail(normalizedEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+                .orElseThrow(() -> new InvalidCredentialsException("Wrong email"));
 
         if (!passwordEncoder.matches(rawPassword, account.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new InvalidCredentialsException("Wrong email/password");
         }
 
         String accessToken = tokenService.createToken(account);
 
+        
         String refreshToken = UUID.randomUUID().toString();
         Instant refreshExpiry = Instant.now().plusSeconds(refreshTtlSeconds);
 
@@ -90,10 +93,10 @@ public class AuthService {
         account.setRefreshTokenExpiry(refreshExpiry);
         userAccountrepository.save(account);
 
-        return new LoginResponse(accessToken, tokenService.getTtlSeconds(), refreshToken, refreshTtlSeconds);
+        return new AuthTokens(accessToken, tokenService.getTtlSeconds(), refreshToken, refreshTtlSeconds);
     }
 
-    public LoginResponse refresh(String refreshToken) {
+    public AuthTokens refresh(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new IllegalArgumentException("Refresh token is required");
         }
@@ -116,29 +119,7 @@ public class AuthService {
         account.setRefreshTokenExpiry(newExpiry);
         userAccountrepository.save(account);
 
-        return new LoginResponse(accessToken, tokenService.getTtlSeconds(), newRefreshToken, refreshTtlSeconds);
+        return new AuthTokens(accessToken, tokenService.getTtlSeconds(), newRefreshToken, refreshTtlSeconds);
     }
 
-    public UserDataDto meByEmail(String email){
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email is required");
-        }
-
-        email = email.trim().toLowerCase(Locale.ROOT);
-
-        UserAccount user = userAccountrepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Long familyId = (user.getPerson().getFamily() == null)
-                ? null
-                : user.getPerson().getFamily().getId();
-
-        return new UserDataDto(
-                user.getId(),
-                user.getEmail(),
-                user.getPerson().getName(),
-                user.getPerson().getRole(),
-                familyId
-        );
-    }
 }
