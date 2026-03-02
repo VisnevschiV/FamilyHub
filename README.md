@@ -18,6 +18,7 @@ FamilyHub is a backend API project built to practice Java, Spring Boot, and comm
 - **Event tracking and shared calendar**
 - **Finance manager**
 
+
 ## Tech Stack
 - **Language**: Java 17
 - **Framework**: Spring Boot 3.4
