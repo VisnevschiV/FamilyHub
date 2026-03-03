@@ -2,6 +2,7 @@ package com.visnevschi.familyhub.service;
 
 import java.time.LocalDate;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
@@ -36,7 +37,7 @@ public class PersonaService {
         persona.setBirthday(birthday);
         persona.setGender(gender);
 
-        return personaRepository.save(persona);
+        return Objects.requireNonNull(personaRepository.save(persona));
     }
 
     public Persona createForEmail(String email, CreatePersonaRequest request) {
@@ -60,6 +61,7 @@ public class PersonaService {
                 .orElseThrow(() -> new NotFoundException("Persona not found"));
     }
 
+    @SuppressWarnings("null")
     public Persona updateForEmail(String email, UpdatePersonaRequest request) {
         Persona persona = getForEmail(email);
 

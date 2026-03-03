@@ -18,6 +18,7 @@ import jakarta.servlet.http.Cookie;
 
 @Configuration
 @EnableWebSecurity
+@SuppressWarnings("unused")
 public class SecurityConfig {
 
     @Bean

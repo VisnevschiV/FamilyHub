@@ -21,7 +21,7 @@ public class Family {
     private String name;
 
     @OneToMany(mappedBy = "family")
-    private List<Persona> members = new ArrayList<>();
+    private final List<Persona> members = new ArrayList<>();
 
     protected Family() {
     }

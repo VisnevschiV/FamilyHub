@@ -1,5 +1,7 @@
 package com.visnevschi.familyhub.service;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Service;
 
 import com.visnevschi.familyhub.document.CalendarEvent;
@@ -26,14 +28,14 @@ public class CalendarService {
     public void deleteEvent(String userEmail, String eventId) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
 
-        CalendarEvent event = calendarEventRepository.findById(eventId)
+        CalendarEvent event = calendarEventRepository.findById(Objects.requireNonNull(eventId))
                 .orElseThrow(() -> new NotFoundException("Event not found"));
 
         if (!event.getFamilyId().equals(familyId)) {
             throw new IllegalStateException("User does not have permission to delete this event");
         }
 
-        calendarEventRepository.deleteById(eventId);
+        calendarEventRepository.deleteById(Objects.requireNonNull(eventId));
     }
 
     public java.util.List<CalendarEvent> getEventsForFamily(String userEmail) {
@@ -44,7 +46,7 @@ public class CalendarService {
     public void updateEvent(String userEmail, String eventId, String title, String description, java.time.Instant time) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
 
-        CalendarEvent event = calendarEventRepository.findById(eventId)
+        CalendarEvent event = calendarEventRepository.findById(Objects.requireNonNull(eventId))
                 .orElseThrow(() -> new NotFoundException("Event not found"));
 
         if (!event.getFamilyId().equals(familyId)) {

@@ -1,10 +1,12 @@
 package com.visnevschi.familyhub.controller;
 
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,15 +37,15 @@ public class AuthController {
     private final String cookieSameSite;
 
     public AuthController(AuthService authService,
-                          @Value("${app.jwt.cookie-access-name:access_token}") String accessCookieName,
-                          @Value("${app.jwt.cookie-refresh-name:refresh_token}") String refreshCookieName,
+                          @Value("${app.jwt.cookie-access-name:access_token}") @NonNull String accessCookieName,
+                          @Value("${app.jwt.cookie-refresh-name:refresh_token}") @NonNull String refreshCookieName,
                           @Value("${app.jwt.cookie-secure:false}") boolean cookieSecure,
-                          @Value("${app.jwt.cookie-same-site:Lax}") String cookieSameSite) {
+                          @Value("${app.jwt.cookie-same-site:Lax}") @NonNull String cookieSameSite) {
         this.authService = authService;
-        this.accessCookieName = accessCookieName;
-        this.refreshCookieName = refreshCookieName;
+        this.accessCookieName = Objects.requireNonNull(accessCookieName);
+        this.refreshCookieName = Objects.requireNonNull(refreshCookieName);
         this.cookieSecure = cookieSecure;
-        this.cookieSameSite = cookieSameSite;
+        this.cookieSameSite = Objects.requireNonNull(cookieSameSite);
     }
 
     @PostMapping("/register")
@@ -78,7 +80,8 @@ public class AuthController {
     }
 
     private void setAuthCookies(HttpServletResponse response, AuthTokens tokens) {
-        ResponseCookie accessCookie = ResponseCookie.from(accessCookieName, tokens.accessToken())
+        ResponseCookie accessCookie = ResponseCookie.from(Objects.requireNonNull(accessCookieName),
+                Objects.requireNonNull(tokens.accessToken()))
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .path("/")
@@ -86,7 +89,8 @@ public class AuthController {
                 .sameSite(cookieSameSite)
                 .build();
 
-        ResponseCookie refreshCookie = ResponseCookie.from(refreshCookieName, tokens.refreshToken())
+        ResponseCookie refreshCookie = ResponseCookie.from(Objects.requireNonNull(refreshCookieName),
+                Objects.requireNonNull(tokens.refreshToken()))
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .path("/auth/refresh")
