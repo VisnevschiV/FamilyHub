@@ -27,6 +27,7 @@ FamilyHub is a backend API project built to practice Java, Spring Boot, and comm
 - **Database**: PostgreSQL
 - **Build**: Gradle
 
+
 ## Getting Started
 
 ### Prerequisites
@@ -64,6 +65,7 @@ Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 ## Notes
 - This project is intentionally small and focused on learning.
 - Tokens are sent via cookies by default; adjust cookie flags in properties for production.
+- Team/dev process is documented in [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md).
 
 ## Moving PostgreSQL to Azure
 
