@@ -3,6 +3,7 @@ package com.visnevschi.familyhub.service;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class FamilyService {
         familyRepository.save(family);
 
         family.addMember(persona);
-        personaRepository.save(persona);
+        personaRepository.save(Objects.requireNonNull(persona));
 
         return family;
     }
@@ -69,7 +70,7 @@ public class FamilyService {
         }
 
         invite.getFamily().addMember(persona);
-        personaRepository.save(persona);
+        personaRepository.save(Objects.requireNonNull(persona));
 
         return invite.getFamily();
     }
@@ -92,7 +93,7 @@ public class FamilyService {
         Family family = requireFamily(persona);
 
         family.removeMember(persona);
-        personaRepository.save(persona);
+        personaRepository.save(Objects.requireNonNull(persona));
         personaRepository.flush();
 
         long remainingMembers = personaRepository.countByFamilyId(family.getId());
@@ -117,8 +118,9 @@ public class FamilyService {
     //TODO: this belongs in PersonaService
     private Persona getPersonaForEmail(String email) {
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-        return personaRepository.findByUserAccountEmail(normalizedEmail)
-                .orElseThrow(() -> new NotFoundException("Persona not found"));
+        Persona persona = personaRepository.findByUserAccountEmail(normalizedEmail)
+            .orElseThrow(() -> new NotFoundException("Persona not found"));
+        return Objects.requireNonNull(persona);
     }
 
     private Family requireFamily(Persona persona) {

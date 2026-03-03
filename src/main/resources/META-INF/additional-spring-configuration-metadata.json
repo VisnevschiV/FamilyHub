@@ -1,0 +1,49 @@
+{
+    "properties": [
+        {
+            "name": "app.jwt.secret",
+            "type": "java.lang.String",
+            "description": "Secret used to sign and verify JWT tokens."
+        },
+        {
+            "name": "app.jwt.ttl-seconds",
+            "type": "java.lang.Long",
+            "description": "Access token time-to-live in seconds."
+        },
+        {
+            "name": "app.jwt.refresh-ttl-seconds",
+            "type": "java.lang.Long",
+            "description": "Refresh token time-to-live in seconds."
+        },
+        {
+            "name": "app.jwt.cookie-access-name",
+            "type": "java.lang.String",
+            "description": "Cookie name used for access token."
+        },
+        {
+            "name": "app.jwt.cookie-refresh-name",
+            "type": "java.lang.String",
+            "description": "Cookie name used for refresh token."
+        },
+        {
+            "name": "app.jwt.cookie-secure",
+            "type": "java.lang.Boolean",
+            "description": "Whether JWT cookies are marked as Secure."
+        },
+        {
+            "name": "app.jwt.cookie-same-site",
+            "type": "java.lang.String",
+            "description": "SameSite setting for JWT cookies."
+        },
+        {
+            "name": "app.family.join-code-ttl-seconds",
+            "type": "java.lang.Long",
+            "description": "Family invitation code TTL in seconds."
+        },
+        {
+            "name": "app.cors.allowed-origins",
+            "type": "java.util.List<java.lang.String>",
+            "description": "Comma-separated list of allowed CORS origins."
+        }
+    ]
+}

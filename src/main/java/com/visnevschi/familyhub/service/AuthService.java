@@ -18,18 +18,18 @@ import com.visnevschi.familyhub.utils.Gender;
 @Service
 public class AuthService {
 
-    private UserAccountRepository userAccountrepository;
+    private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final PersonaService personaService;
     private final long refreshTtlSeconds;
 
-    public AuthService(UserAccountRepository userAccountrepository,
+    public AuthService(UserAccountRepository userAccountRepository,
                        PasswordEncoder passwordEncoder,
                        TokenService tokenService,
                        PersonaService personaService,
                        @Value("${app.jwt.refresh-ttl-seconds}") long refreshTtlSeconds) {
-        this.userAccountrepository = userAccountrepository;
+        this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
         this.personaService = personaService;
@@ -55,7 +55,7 @@ public class AuthService {
 
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
 
-        if (userAccountrepository.existsByEmail(normalizedEmail)) {
+        if (userAccountRepository.existsByEmail(normalizedEmail)) {
             throw new IllegalArgumentException("Email already in use");
         }
 
@@ -63,7 +63,7 @@ public class AuthService {
         userAccount.setEmail(normalizedEmail);
         userAccount.setPassword(passwordEncoder.encode(rawPassword));
 
-        UserAccount savedAccount = userAccountrepository.save(userAccount);
+        UserAccount savedAccount = userAccountRepository.save(userAccount);
         personaService.createForUser(savedAccount, name.trim(), birthday, gender);
     }
 
@@ -76,7 +76,7 @@ public class AuthService {
         }
 
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-        UserAccount account = userAccountrepository.findByEmail(normalizedEmail)
+        UserAccount account = userAccountRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new InvalidCredentialsException("Wrong email"));
 
         if (!passwordEncoder.matches(rawPassword, account.getPassword())) {
@@ -91,7 +91,7 @@ public class AuthService {
 
         account.setRefreshToken(refreshToken);
         account.setRefreshTokenExpiry(refreshExpiry);
-        userAccountrepository.save(account);
+        userAccountRepository.save(account);
 
         return new AuthTokens(accessToken, tokenService.getTtlSeconds(), refreshToken, refreshTtlSeconds);
     }
@@ -101,7 +101,7 @@ public class AuthService {
             throw new IllegalArgumentException("Refresh token is required");
         }
 
-        UserAccount account = userAccountrepository.findByRefreshToken(refreshToken)
+        UserAccount account = userAccountRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
 
         Instant expiry = account.getRefreshTokenExpiry();
@@ -117,7 +117,7 @@ public class AuthService {
 
         account.setRefreshToken(newRefreshToken);
         account.setRefreshTokenExpiry(newExpiry);
-        userAccountrepository.save(account);
+        userAccountRepository.save(account);
 
         return new AuthTokens(accessToken, tokenService.getTtlSeconds(), newRefreshToken, refreshTtlSeconds);
     }
