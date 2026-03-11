@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.mongodb.MongoException;
 import com.visnevschi.familyhub.dto.ApiError;
 import com.visnevschi.familyhub.exception.InvalidCredentialsException;
 import com.visnevschi.familyhub.exception.NotFoundException;
@@ -169,6 +171,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(payload);
     }
 
+        @ExceptionHandler({MongoException.class, DataAccessException.class})
+        public ResponseEntity<ApiError> handleDatabaseUnavailable(Exception ex,
+                                                                                                                          HttpServletRequest request) {
+                String errorId = UUID.randomUUID().toString();
+                logger.error("Database error {} on {} {}",
+                                errorId,
+                                request.getMethod(),
+                                request.getRequestURI(),
+                                ex);
+
+                ApiError payload = buildError(HttpStatus.SERVICE_UNAVAILABLE,
+                                "Database is temporarily unavailable. Reference: " + errorId,
+                                request.getRequestURI(),
+                                errorId,
+                                null);
+
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(payload);
+        }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiError> handleRuntimeException(RuntimeException ex,
                                                            HttpServletRequest request) {
@@ -204,3 +225,4 @@ public class GlobalExceptionHandler {
         );
     }
 }
+
