@@ -2,6 +2,7 @@ package com.visnevschi.familyhub.service;
 
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -151,5 +152,10 @@ public class FamilyService {
         Persona persona = getPersonaForEmail(email);
         Family family = requireFamily(persona);
         return family.getId();
+    }
+
+    public List<Persona> getFamilyMembersForUser(String email) {
+        Long familyId = getFamilyIdForUser(email);
+        return personaRepository.findByFamilyIdOrderByNameAsc(familyId);
     }
 }

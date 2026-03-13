@@ -161,7 +161,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex,
-                                                       HttpServletRequest request) {
+                                                        HttpServletRequest request) {
         ApiError payload = buildError(HttpStatus.FORBIDDEN,
                 "Access denied",
                 request.getRequestURI(),

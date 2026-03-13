@@ -18,10 +18,13 @@ public class CalendarService {
         this.calendarEventRepository = calendarEventRepository;
     }
 
-    public void createEvent(String userEmail, String title, String description, java.time.Instant time) {
+    public void createEvent(String userEmail, String title, String description, java.time.Instant time, java.util.Set<Long> participants) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
 
         CalendarEvent event = new CalendarEvent(title, description, time, familyId);
+        if (participants != null && !participants.isEmpty()) {
+            event.setParticipants(new java.util.HashSet<>(participants));
+        }
         calendarEventRepository.save(event);
     }
 
@@ -43,7 +46,7 @@ public class CalendarService {
         return calendarEventRepository.findByFamilyId(familyId);
     }
 
-    public void updateEvent(String userEmail, String eventId, String title, String description, java.time.Instant time) {
+    public void updateEvent(String userEmail, String eventId, String title, String description, java.time.Instant time, java.util.Set<Long> participants) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
 
         CalendarEvent event = calendarEventRepository.findById(Objects.requireNonNull(eventId))
@@ -56,6 +59,7 @@ public class CalendarService {
         event.setTitle(title);
         event.setDescription(description);
         event.setTime(time);
+        event.setParticipants(participants != null ? new java.util.HashSet<>(participants) : new java.util.HashSet<>());
         calendarEventRepository.save(event);
     }
 }

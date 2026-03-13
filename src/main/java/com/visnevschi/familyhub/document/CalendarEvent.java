@@ -1,13 +1,14 @@
 package com.visnevschi.familyhub.document;
 
 import java.time.Instant;
-
-import com.mongodb.lang.NonNull;
+import java.util.HashSet;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+
+import com.mongodb.lang.NonNull;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -35,18 +36,36 @@ public class CalendarEvent {
     @Field("description")
     private String description;
 
+    private HashSet<Long> participants;
+
     protected CalendarEvent() {
     }
 
-    public CalendarEvent(String title, String description, Instant time, Long familyId) {
+    public CalendarEvent(String title, String description, Instant time, Long familyId , Long... participants) {
         this.title = title;
         this.description = description;
         this.time = time;
         this.familyId = familyId;
+        this.participants = new HashSet<>();
+        for (Long participant : participants) {
+            this.participants.add(participant);
+        }
     }
 
     public String getId() {
         return id;
+    }
+
+    public HashSet<Long> getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(HashSet<Long> participants) {
+        this.participants = participants;
+    }
+
+    public void addParticipant(Long participant) {
+        participants.add(participant);
     }
 
     public String getTitle() {
