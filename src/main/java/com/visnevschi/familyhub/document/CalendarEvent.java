@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.HashSet;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -15,6 +17,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Document(collection = "calendar_events")
+@CompoundIndexes({
+        @CompoundIndex(name = "event_family_time_idx", def = "{'family_id': 1, 'time': 1}")
+})
 public class CalendarEvent {
     @Id
     private String id;

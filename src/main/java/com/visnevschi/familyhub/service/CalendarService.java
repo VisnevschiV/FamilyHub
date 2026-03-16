@@ -12,10 +12,14 @@ import com.visnevschi.familyhub.repository.CalendarEventRepository;
 public class CalendarService {
     private final FamilyService familyService;
     private final CalendarEventRepository calendarEventRepository;
+    private final NotificationService notificationService;
+    private final PersonaService personaService;
 
-    public CalendarService(FamilyService familyService, CalendarEventRepository calendarEventRepository) {
+    public CalendarService(FamilyService familyService, CalendarEventRepository calendarEventRepository, NotificationService notificationService, PersonaService personaService) {
         this.familyService = familyService;
         this.calendarEventRepository = calendarEventRepository;
+        this.notificationService = notificationService;
+        this.personaService = personaService;
     }
 
     public void createEvent(String userEmail, String title, String description, java.time.Instant time, java.util.Set<Long> participants) {
@@ -26,6 +30,8 @@ public class CalendarService {
             event.setParticipants(new java.util.HashSet<>(participants));
         }
         calendarEventRepository.save(event);
+        Long creatorId = personaService.getForEmail(userEmail).getId();
+        notificationService.createNotification(creatorId, "New event created: " + title);
     }
 
     public void deleteEvent(String userEmail, String eventId) {
