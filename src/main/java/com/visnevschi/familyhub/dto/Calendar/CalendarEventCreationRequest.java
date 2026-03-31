@@ -1,6 +1,8 @@
 package com.visnevschi.familyhub.dto.Calendar;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,6 +19,8 @@ public class CalendarEventCreationRequest {
     @NotNull
     private Instant time;
 
+    private Set<Long> participants = new HashSet<>();
+
     public String getTitle() {
         return title;
     }
@@ -27,5 +31,9 @@ public class CalendarEventCreationRequest {
 
     public Instant getTime() {
         return time;
+    }
+
+    public Set<Long> getParticipants() {
+        return participants;
     }
 }

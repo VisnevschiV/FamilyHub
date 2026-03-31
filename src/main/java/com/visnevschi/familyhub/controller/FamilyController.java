@@ -1,8 +1,11 @@
 package com.visnevschi.familyhub.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,7 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.visnevschi.familyhub.dbenitity.Family;
 import com.visnevschi.familyhub.dbenitity.FamilyInvite;
+import com.visnevschi.familyhub.dbenitity.Persona;
 import com.visnevschi.familyhub.dto.Family.CreateFamilyRequest;
+import com.visnevschi.familyhub.dto.Family.FamilyMemberResponse;
 import com.visnevschi.familyhub.dto.Family.FamilyResponse;
 import com.visnevschi.familyhub.dto.Family.JoinCodeResponse;
 import com.visnevschi.familyhub.dto.Family.JoinFamilyRequest;
@@ -65,8 +70,19 @@ public class FamilyController {
         familyService.leaveFamily(jwt.getSubject());
     }
 
+    @GetMapping("/me/members")
+    public List<FamilyMemberResponse> members(@AuthenticationPrincipal Jwt jwt) {
+        return familyService.getFamilyMembersForUser(jwt.getSubject()).stream()
+                .map(this::toMemberResponse)
+                .toList();
+    }
+
     private FamilyResponse toResponse(Family family) {
         long members = familyService.countMembers(family.getId());
         return new FamilyResponse(family.getId(), family.getName(), members);
+    }
+
+    private FamilyMemberResponse toMemberResponse(Persona persona) {
+        return new FamilyMemberResponse(persona.getId(), persona.getName(), persona.getAvatarUrl());
     }
 }

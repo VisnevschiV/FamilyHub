@@ -12,17 +12,26 @@ import com.visnevschi.familyhub.repository.CalendarEventRepository;
 public class CalendarService {
     private final FamilyService familyService;
     private final CalendarEventRepository calendarEventRepository;
+    private final NotificationService notificationService;
+    private final PersonaService personaService;
 
-    public CalendarService(FamilyService familyService, CalendarEventRepository calendarEventRepository) {
+    public CalendarService(FamilyService familyService, CalendarEventRepository calendarEventRepository, NotificationService notificationService, PersonaService personaService) {
         this.familyService = familyService;
         this.calendarEventRepository = calendarEventRepository;
+        this.notificationService = notificationService;
+        this.personaService = personaService;
     }
 
-    public void createEvent(String userEmail, String title, String description, java.time.Instant time) {
+    public void createEvent(String userEmail, String title, String description, java.time.Instant time, java.util.Set<Long> participants) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
 
         CalendarEvent event = new CalendarEvent(title, description, time, familyId);
+        if (participants != null && !participants.isEmpty()) {
+            event.setParticipants(new java.util.HashSet<>(participants));
+        }
         calendarEventRepository.save(event);
+        Long creatorId = personaService.getForEmail(userEmail).getId();
+        notificationService.createNotification(creatorId, "New event created: " + title);
     }
 
     public void deleteEvent(String userEmail, String eventId) {
@@ -43,7 +52,7 @@ public class CalendarService {
         return calendarEventRepository.findByFamilyId(familyId);
     }
 
-    public void updateEvent(String userEmail, String eventId, String title, String description, java.time.Instant time) {
+    public void updateEvent(String userEmail, String eventId, String title, String description, java.time.Instant time, java.util.Set<Long> participants) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
 
         CalendarEvent event = calendarEventRepository.findById(Objects.requireNonNull(eventId))
@@ -56,6 +65,7 @@ public class CalendarService {
         event.setTitle(title);
         event.setDescription(description);
         event.setTime(time);
+        event.setParticipants(participants != null ? new java.util.HashSet<>(participants) : new java.util.HashSet<>());
         calendarEventRepository.save(event);
     }
 }
