@@ -30,7 +30,21 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
+      - name: Validate datasource secrets
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+        run: |
+          test -n "$SPRING_DATASOURCE_URL" || (echo "Missing SPRING_DATASOURCE_URL secret" && exit 1)
+          test -n "$SPRING_DATASOURCE_USERNAME" || (echo "Missing SPRING_DATASOURCE_USERNAME secret" && exit 1)
+          test -n "$SPRING_DATASOURCE_PASSWORD" || (echo "Missing SPRING_DATASOURCE_PASSWORD secret" && exit 1)
+
       - name: Build with Gradle
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
         run: ./gradlew clean test bootJar
 
       - name: Upload artifact for deployment job
