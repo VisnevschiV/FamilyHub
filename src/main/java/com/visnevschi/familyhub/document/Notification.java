@@ -31,6 +31,8 @@ public class Notification {
     private boolean read;
 
     public Notification() {
+
+        
     }
 
     public Notification(Long personaId, String message) {
