@@ -16,9 +16,9 @@ public class AsyncConfig {
     @Bean(name = "notificationExecutor")
     public Executor notificationExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);        // threads always kept alive
-        executor.setMaxPoolSize(5);         // max threads under load
-        executor.setQueueCapacity(100);     // tasks queued before rejecting
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(5);         
+        executor.setQueueCapacity(100); 
         executor.setThreadNamePrefix("notification-");
         executor.setWaitForTasksToCompleteOnShutdown(true);   // finish in-flight on shutdown
         executor.setAwaitTerminationSeconds(10);
