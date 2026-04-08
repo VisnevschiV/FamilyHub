@@ -38,7 +38,6 @@ public class NotificationService {
         try {
             Notification notification = new Notification(personaId, message);
             notificationRepository.save(notification);
-            log.debug("Notification saved for personaId={}", personaId);
 
             NotificationResponse response = new NotificationResponse(
                     notification.getId(),
