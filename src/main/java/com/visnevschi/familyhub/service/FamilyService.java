@@ -28,17 +28,21 @@ public class FamilyService {
     private final PersonaRepository personaRepository;
     private final FamilyRepository familyRepository;
     private final FamilyInviteRepository familyInviteRepository;
+    private final NotificationService notificationService;
+
     private final long joinCodeTtlSeconds;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public FamilyService(PersonaRepository personaRepository,
                          FamilyRepository familyRepository,
                          FamilyInviteRepository familyInviteRepository,
+                         NotificationService notificationService,
                          @Value("${app.family.join-code-ttl-seconds:900}") long joinCodeTtlSeconds) {
         this.personaRepository = personaRepository;
         this.familyRepository = familyRepository;
         this.familyInviteRepository = familyInviteRepository;
         this.joinCodeTtlSeconds = joinCodeTtlSeconds;
+        this.notificationService = notificationService;
     }
 
     public Family createFamily(String email, String name) {
@@ -52,7 +56,7 @@ public class FamilyService {
 
         family.addMember(persona);
         personaRepository.save(Objects.requireNonNull(persona));
-
+        notificationService.createNotification(family.getId(), "Family created: " + name);
         return family;
     }
 
@@ -72,7 +76,7 @@ public class FamilyService {
 
         invite.getFamily().addMember(persona);
         personaRepository.save(Objects.requireNonNull(persona));
-
+        notificationService.createNotification(invite.getFamily().getId(), "New member joined the family: " + persona.getName());
         return invite.getFamily();
     }
 
@@ -102,6 +106,7 @@ public class FamilyService {
             familyInviteRepository.deleteByFamilyId(family.getId());
             familyRepository.delete(family);
         }
+        notificationService.createNotification(family.getId(), "A member has left the family: " + persona.getName());
     }
 
     public Family updateFamilyName(String email, String newName) {
@@ -109,7 +114,9 @@ public class FamilyService {
         Family family = requireFamily(persona);
 
         family.setName(newName.trim());
-        return familyRepository.save(family);
+        Family updatedFamily = familyRepository.save(family);
+        notificationService.createNotification(updatedFamily.getId(), "Family name updated to: " + newName);
+        return updatedFamily;
     }
 
     public long countMembers(Long familyId) {
