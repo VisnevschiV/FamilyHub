@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import com.visnevschi.familyhub.document.CalendarEvent;
 import com.visnevschi.familyhub.repository.CalendarEventRepository;
 
 @Service
+@ConditionalOnBean(CalendarEventRepository.class)
 public class EventReminderScheduler {
     private static final Logger log = LoggerFactory.getLogger(EventReminderScheduler.class);
     private static final long REMINDER_WINDOW_MINUTES = 10;
@@ -42,7 +44,7 @@ public class EventReminderScheduler {
      * 3. For each event, notify all participants
      * 4. Use dedup set to avoid sending same reminder twice
      */
-    @Scheduled(fixedRate = 300000)  // 300,000 milliseconds = 5 minutes
+    @Scheduled(fixedRate = 300000)  // 300,000 milliseconds = 5minutes
     public void checkUpcomingEvents() {
         log.info("=== Starting upcoming event reminder check ===");
         
