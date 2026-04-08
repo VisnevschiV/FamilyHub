@@ -13,10 +13,12 @@ import com.visnevschi.familyhub.repository.TaskListRepository;
 public class TaskService {
     private final FamilyService familyService;
     private final TaskListRepository taskListRepository;
+    private final NotificationService notificationService;
     
-    public TaskService(TaskListRepository taskListRepository, FamilyService familyService) {
+    public TaskService(TaskListRepository taskListRepository, FamilyService familyService, NotificationService notificationService) {
         this.taskListRepository = taskListRepository;
         this.familyService = familyService;
+        this.notificationService = notificationService;
     }
 
     public void createTask(String userEmail, String listId, String taskName) {
@@ -28,6 +30,7 @@ public class TaskService {
         Task t = new Task(UUID.randomUUID().toString(), taskName, false);
         l.addTask(t);
         taskListRepository.save(l);
+        notificationService.createNotification(familyId, "New task added: " + taskName);
     }
 
     public void deleteTask(String userEmail, String listId, String taskId) {

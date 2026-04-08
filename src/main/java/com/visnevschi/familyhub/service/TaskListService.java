@@ -12,16 +12,19 @@ import com.visnevschi.familyhub.repository.TaskListRepository;
 public class TaskListService {
     private final FamilyService familyService;
     private final TaskListRepository taskListRepository;
+    private final NotificationService notificationService;
 
-    public TaskListService(TaskListRepository taskListRepository, FamilyService familyService) {
+    public TaskListService(TaskListRepository taskListRepository, FamilyService familyService , NotificationService notificationService) {
         this.taskListRepository = taskListRepository;
         this.familyService = familyService;
+        this.notificationService = notificationService;
     }
 
     public void createTaskList(TaskListCreationRequest request, String userEmail) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
         TaskList taskList = new TaskList(request.getName(), familyId);
         taskListRepository.save(taskList);
+        notificationService.createNotification(familyId, "New task list created: " + request.getName());
     }
 
     public TaskListsResponse getTasksForUser(String userEmail) {
@@ -37,6 +40,7 @@ public class TaskListService {
         if (deleted == 0) {
             throw new NotFoundException("Task list not found");
         }
+        notificationService.createNotification(familyId, "Task list deleted");
     }
 
     public void modifyTaskListName(String listId, String newName, String userEmail) {
@@ -47,5 +51,6 @@ public class TaskListService {
         }
         taskList.setName(newName);
         taskListRepository.save(taskList);
+        notificationService.createNotification(familyId, "Task list renamed to: " + newName);
     }
 }
