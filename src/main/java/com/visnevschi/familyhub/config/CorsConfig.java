@@ -20,7 +20,7 @@ public class CorsConfig implements WebMvcConfigurer {
     private final String[] allowedOrigins;
 
     public CorsConfig(
-            @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:4200}")
+            @Value("${app.cors.allowed-origins:https://happywifehappylife.app,https://www.happywifehappylife.app,http://localhost:3000,http://localhost:5173,http://localhost:4200}")
             List<String> allowedOrigins) {
         this.allowedOrigins = allowedOrigins.stream()
                 .filter(Objects::nonNull)
