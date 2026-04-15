@@ -83,6 +83,6 @@ public class TaskController {
     
     @PatchMapping("/lists")
     public void updateList(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody TaskListModifyRequest request) {
-        taskListService.modifyTaskListName(request.getId(), request.getNewName(), jwt.getSubject());
+        taskListService.modifyTaskListName(request.getId(), request.getNewName(), request.getParticipants(), jwt.getSubject());
     }
 }
