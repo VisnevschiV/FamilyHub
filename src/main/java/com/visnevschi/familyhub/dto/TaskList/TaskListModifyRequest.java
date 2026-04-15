@@ -1,5 +1,7 @@
 package com.visnevschi.familyhub.dto.TaskList;
 
+import java.util.Set;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -12,11 +14,17 @@ public class TaskListModifyRequest {
     @NotBlank
     String newName;
 
+    Set<Long> participants;
+
     public String getId() {
         return id;
     }
 
     public String getNewName() {
         return newName;
+    }
+
+    public Set<Long> getParticipants() {
+        return participants;
     }
 }

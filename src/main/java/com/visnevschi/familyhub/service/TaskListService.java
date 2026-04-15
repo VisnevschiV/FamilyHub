@@ -1,7 +1,13 @@
 package com.visnevschi.familyhub.service;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
+import com.visnevschi.familyhub.dbenitity.Persona;
 import com.visnevschi.familyhub.document.TaskList;
 import com.visnevschi.familyhub.dto.TaskList.TaskListCreationRequest;
 import com.visnevschi.familyhub.dto.TaskList.TaskListsResponse;
@@ -22,35 +28,72 @@ public class TaskListService {
 
     public void createTaskList(TaskListCreationRequest request, String userEmail) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
+        Long personaId = notificationService.resolvePersonaId(userEmail);
         TaskList taskList = new TaskList(request.getName(), familyId);
+        taskList.setParticipants(resolveAndValidateParticipants(request.getParticipants(), userEmail, personaId));
         taskListRepository.save(taskList);
         notificationService.createNotification(familyId, "New task list created: " + request.getName());
     }
 
     public TaskListsResponse getTasksForUser(String userEmail) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
+        Long personaId = notificationService.resolvePersonaId(userEmail);
         TaskListsResponse response = new TaskListsResponse();
-        response.setTaskLists(taskListRepository.findAllByFamilyId(familyId));
+        response.setTaskLists(taskListRepository.findVisibleByFamilyIdAndPersonaId(familyId, personaId));
         return response;
     }
 
     public void deleteTaskList(String listId, String userEmail) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
-        long deleted = taskListRepository.deleteByIdAndFamilyId(listId, familyId);
-        if (deleted == 0) {
-            throw new NotFoundException("Task list not found");
-        }
+        Long personaId = notificationService.resolvePersonaId(userEmail);
+        TaskList taskList = requireAccessibleTaskList(listId, familyId, personaId);
+        taskListRepository.delete(Objects.requireNonNull(taskList));
         notificationService.createNotification(familyId, "Task list deleted");
     }
 
-    public void modifyTaskListName(String listId, String newName, String userEmail) {
+    public void modifyTaskListName(String listId, String newName, Set<Long> participants, String userEmail) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
-        TaskList taskList = taskListRepository.findByIdAndFamilyId(listId, familyId);
+        Long personaId = notificationService.resolvePersonaId(userEmail);
+        TaskList taskList = requireAccessibleTaskList(listId, familyId, personaId);
+
+        taskList.setName(newName);
+        if (participants != null) {
+            taskList.setParticipants(resolveAndValidateParticipants(participants, userEmail, personaId));
+        }
+        taskListRepository.save(taskList);
+        notificationService.createNotification(familyId, "Task list renamed to: " + newName);
+    }
+
+    private TaskList requireAccessibleTaskList(String listId, Long familyId, Long personaId) {
+        TaskList taskList = taskListRepository.findVisibleByIdAndFamilyIdAndPersonaId(listId, familyId, personaId);
         if (taskList == null) {
             throw new NotFoundException("Task list not found");
         }
-        taskList.setName(newName);
-        taskListRepository.save(taskList);
-        notificationService.createNotification(familyId, "Task list renamed to: " + newName);
+        return taskList;
+    }
+
+    private HashSet<Long> resolveAndValidateParticipants(Set<Long> participantIds, String userEmail, Long personaId) {
+        if (participantIds == null || participantIds.isEmpty()) {
+            return new HashSet<>();
+        }
+
+        if (participantIds.contains(null)) {
+            throw new IllegalArgumentException("Participants cannot contain null IDs");
+        }
+
+        Set<Long> familyMemberIds = familyService.getFamilyMembersForUser(userEmail)
+                .stream()
+                .map(Persona::getId)
+                .collect(Collectors.toSet());
+
+        if (!familyMemberIds.containsAll(participantIds)) {
+            throw new IllegalArgumentException("All participants must belong to your family");
+        }
+
+        if (!participantIds.contains(personaId)) {
+            throw new IllegalArgumentException("You must be included in participants");
+        }
+
+        return new HashSet<>(participantIds);
     }
 }

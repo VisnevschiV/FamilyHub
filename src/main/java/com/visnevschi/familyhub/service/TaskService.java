@@ -23,10 +23,9 @@ public class TaskService {
 
     public void createTask(String userEmail, String listId, String taskName) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
-        TaskList l = taskListRepository.findByIdAndFamilyId(listId, familyId);
-        if (l == null) {
-            throw new NotFoundException("Task list not found");
-        }
+        Long personaId = notificationService.resolvePersonaId(userEmail);
+        TaskList l = requireAccessibleTaskList(listId, familyId, personaId);
+
         Task t = new Task(UUID.randomUUID().toString(), taskName, false);
         l.addTask(t);
         taskListRepository.save(l);
@@ -35,20 +34,18 @@ public class TaskService {
 
     public void deleteTask(String userEmail, String listId, String taskId) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
-        TaskList l = taskListRepository.findByIdAndFamilyId(listId, familyId);
-        if (l == null) {
-            throw new NotFoundException("Task list not found");
-        }
+        Long personaId = notificationService.resolvePersonaId(userEmail);
+        TaskList l = requireAccessibleTaskList(listId, familyId, personaId);
+
         l.removeTask(taskId);
         taskListRepository.save(l);
     }
 
     public void modifyTask(String userEmail, String listId, String taskId, String newName, Boolean completed) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
-        TaskList l = taskListRepository.findByIdAndFamilyId(listId, familyId);
-        if (l == null) {
-            throw new NotFoundException("Task list not found");
-        }
+        Long personaId = notificationService.resolvePersonaId(userEmail);
+        TaskList l = requireAccessibleTaskList(listId, familyId, personaId);
+
         Task t = l.getTask(taskId);
         if (t == null) {
             throw new NotFoundException("Task not found");
@@ -60,6 +57,14 @@ public class TaskService {
             t.setCompleted(completed);
         }
         taskListRepository.save(l);
+    }
+
+    private TaskList requireAccessibleTaskList(String listId, Long familyId, Long personaId) {
+        TaskList taskList = taskListRepository.findVisibleByIdAndFamilyIdAndPersonaId(listId, familyId, personaId);
+        if (taskList == null) {
+            throw new NotFoundException("Task list not found");
+        }
+        return taskList;
     }
     
 }
