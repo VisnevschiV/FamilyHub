@@ -1,6 +1,7 @@
 package com.visnevschi.familyhub.dto.PeriodProfile;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record PeriodProfileResponse(
         Long personaId,
@@ -12,6 +13,7 @@ public record PeriodProfileResponse(
         LocalDate lastPeriodEndDate,
         Integer learnedCycleLengthDays,
         Integer learningSamples,
-        LocalDate nextPredictedStartDate
+        LocalDate nextPredictedStartDate,
+        List<PeriodRecordResponse> records
 ) {
 }

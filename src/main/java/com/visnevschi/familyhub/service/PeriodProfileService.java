@@ -1,21 +1,23 @@
-package com.visnevschi.familyhub.service;
+﻿package com.visnevschi.familyhub.service;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.visnevschi.familyhub.dbenitity.PeriodProfile;
-import com.visnevschi.familyhub.dbenitity.PeriodRecord;
 import com.visnevschi.familyhub.dbenitity.Persona;
+import com.visnevschi.familyhub.document.PeriodProfile;
+import com.visnevschi.familyhub.document.PeriodRecord;
 import com.visnevschi.familyhub.dto.PeriodProfile.CreatePeriodProfileRequest;
+import com.visnevschi.familyhub.dto.PeriodProfile.FamilyMemberMonthResponse;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodDateRequest;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodMonthResponse;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodProfileResponse;
@@ -24,7 +26,6 @@ import com.visnevschi.familyhub.dto.PeriodProfile.RecordPeriodEventRequest;
 import com.visnevschi.familyhub.dto.PeriodProfile.UpdatePeriodProfileRequest;
 import com.visnevschi.familyhub.exception.NotFoundException;
 import com.visnevschi.familyhub.repository.PeriodProfileRepository;
-import com.visnevschi.familyhub.repository.PeriodRecordRepository;
 import com.visnevschi.familyhub.utils.Gender;
 import com.visnevschi.familyhub.utils.PeriodEventType;
 
@@ -38,18 +39,13 @@ public class PeriodProfileService {
 
     private final PersonaService personaService;
     private final PeriodProfileRepository periodProfileRepository;
-    private final PeriodRecordRepository periodRecordRepository;
 
     public PeriodProfileService(PersonaService personaService,
-                                PeriodProfileRepository periodProfileRepository,
-                                PeriodRecordRepository periodRecordRepository) {
+                                PeriodProfileRepository periodProfileRepository) {
         this.personaService = personaService;
         this.periodProfileRepository = periodProfileRepository;
-        this.periodRecordRepository = periodRecordRepository;
     }
 
-    @SuppressWarnings("null")
-    @Transactional
     public PeriodProfileResponse createForEmail(String email, CreatePeriodProfileRequest request) {
         Persona persona = personaService.getForEmail(email);
         validatePersonaEligibility(persona);
@@ -59,13 +55,13 @@ public class PeriodProfileService {
             throw new IllegalStateException("Period profile already exists for this persona");
         }
 
-        PeriodProfile profile = new PeriodProfile(persona);
+        PeriodProfile profile = new PeriodProfile(personaId, familyId(persona));
         setDefaults(profile);
         applyCreateValues(profile, request);
         normalizeDefaults(profile);
         recalculatePrediction(profile);
 
-        return toResponse(Objects.requireNonNull(periodProfileRepository.save(profile)));
+        return toResponse(periodProfileRepository.save(profile));
     }
 
     public PeriodProfileResponse getForEmail(String email) {
@@ -89,8 +85,21 @@ public class PeriodProfileService {
                 });
     }
 
+    public List<PeriodProfileResponse> getFamilyPeriodsForEmail(String email) {
+        Persona persona = personaService.getForEmail(email);
+        if (persona.getFamily() == null) {
+            throw new IllegalStateException("Persona does not belong to a family");
+        }
+        return periodProfileRepository.findByFamilyId(persona.getFamily().getId()).stream()
+                .map(profile -> {
+                    normalizeDefaults(profile);
+                    recalculatePrediction(profile);
+                    return toResponse(profile);
+                })
+                .toList();
+    }
+
     @SuppressWarnings("null")
-    @Transactional
     public PeriodProfileResponse updateForEmail(String email, UpdatePeriodProfileRequest request) {
         Persona persona = personaService.getForEmail(email);
         Long personaId = Objects.requireNonNull(persona.getId(), "Persona id is required");
@@ -116,8 +125,6 @@ public class PeriodProfileService {
         return toResponse(periodProfileRepository.save(profile));
     }
 
-    @SuppressWarnings("null")
-    @Transactional
     public PeriodProfileResponse recordEventForEmail(String email, RecordPeriodEventRequest request) {
         if (request.eventType() == PeriodEventType.STARTED) {
             return startPeriodForEmail(email, new PeriodDateRequest(request.date()));
@@ -129,7 +136,6 @@ public class PeriodProfileService {
     }
 
     @SuppressWarnings("null")
-    @Transactional
     public PeriodProfileResponse startPeriodForEmail(String email, PeriodDateRequest request) {
         Persona persona = personaService.getForEmail(email);
         validatePersonaEligibility(persona);
@@ -137,9 +143,9 @@ public class PeriodProfileService {
 
         PeriodProfile profile = periodProfileRepository.findById(personaId)
                 .orElseGet(() -> {
-                    PeriodProfile created = new PeriodProfile(persona);
+                    PeriodProfile created = new PeriodProfile(personaId, familyId(persona));
                     setDefaults(created);
-                    return Objects.requireNonNull(periodProfileRepository.save(created));
+                    return periodProfileRepository.save(created);
                 });
 
         normalizeDefaults(profile);
@@ -148,11 +154,10 @@ public class PeriodProfileService {
         syncLatestPeriodDates(profile);
         recalculatePrediction(profile);
 
-        return toResponse(Objects.requireNonNull(periodProfileRepository.save(profile)));
+        return toResponse(periodProfileRepository.save(profile));
     }
 
     @SuppressWarnings("null")
-    @Transactional
     public PeriodProfileResponse stopPeriodForEmail(String email, PeriodDateRequest request) {
         Persona persona = personaService.getForEmail(email);
         validatePersonaEligibility(persona);
@@ -167,7 +172,7 @@ public class PeriodProfileService {
         syncLatestPeriodDates(profile);
         recalculatePrediction(profile);
 
-        return toResponse(Objects.requireNonNull(periodProfileRepository.save(profile)));
+        return toResponse(periodProfileRepository.save(profile));
     }
 
     public PeriodMonthResponse getMonthForEmail(String email, int year, int month) {
@@ -186,22 +191,51 @@ public class PeriodProfileService {
         syncLatestPeriodDates(profile);
         recalculatePrediction(profile);
 
+        return computeMonth(profile, year, month);
+    }
+
+    public List<FamilyMemberMonthResponse> getFamilyMonthForEmail(String email, int year, int month) {
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("Month must be between 1 and 12");
+        }
+
+        Persona persona = personaService.getForEmail(email);
+        if (persona.getFamily() == null) {
+            throw new IllegalStateException("Persona does not belong to a family");
+        }
+
+        return periodProfileRepository.findByFamilyId(persona.getFamily().getId()).stream()
+                .map(profile -> {
+                    normalizeDefaults(profile);
+                    syncLatestPeriodDates(profile);
+                    recalculatePrediction(profile);
+                    PeriodMonthResponse m = computeMonth(profile, year, month);
+                    return new FamilyMemberMonthResponse(profile.getId(), m.year(), m.month(), m.records(), m.prediction());
+                })
+                .toList();
+    }
+
+    private PeriodMonthResponse computeMonth(PeriodProfile profile, int year, int month) {
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDate monthStart = yearMonth.atDay(1);
         LocalDate monthEnd = yearMonth.atEndOfMonth();
 
-        List<PeriodRecord> monthRecords = periodRecordRepository.findMonthRecordsByProfileId(profile.getId(), monthStart, monthEnd);
-        List<PeriodRecordResponse> records = monthRecords.stream()
-            .filter(record -> {
-                if (record.getEndDate() != null) {
-                return true;
-                }
+        List<PeriodRecord> monthRecords = profile.getPeriodRecords().stream()
+                .filter(r -> !r.getStartDate().isAfter(monthEnd)
+                        && (r.getEndDate() == null || !r.getEndDate().isBefore(monthStart)))
+                .sorted(Comparator.comparing(PeriodRecord::getStartDate))
+                .toList();
 
-                // Open periods are treated as lasting the configured/default period length.
-                LocalDate expectedEnd = record.getStartDate()
-                    .plusDays(Math.max(1, profile.getPeriodLengthDays()) - 1L);
-                return !expectedEnd.isBefore(monthStart);
-            })
+        List<PeriodRecordResponse> records = monthRecords.stream()
+                .filter(record -> {
+                    if (record.getEndDate() != null) {
+                        return true;
+                    }
+                    // Open periods are treated as lasting the configured/default period length.
+                    LocalDate expectedEnd = record.getStartDate()
+                            .plusDays(Math.max(1, profile.getPeriodLengthDays()) - 1L);
+                    return !expectedEnd.isBefore(monthStart);
+                })
                 .map(record -> new PeriodRecordResponse(record.getId(), record.getStartDate(), record.getEndDate(), false))
                 .toList();
 
@@ -217,7 +251,6 @@ public class PeriodProfileService {
         return new PeriodMonthResponse(year, month, records, prediction);
     }
 
-    @Transactional
     public void deleteForEmail(String email) {
         Persona persona = personaService.getForEmail(email);
         Long personaId = Objects.requireNonNull(persona.getId(), "Persona id is required");
@@ -225,6 +258,10 @@ public class PeriodProfileService {
             throw new NotFoundException("Period profile not found");
         }
         periodProfileRepository.deleteById(personaId);
+    }
+
+    private Long familyId(Persona persona) {
+        return persona.getFamily() != null ? persona.getFamily().getId() : null;
     }
 
     private void validatePersonaEligibility(Persona persona) {
@@ -274,22 +311,25 @@ public class PeriodProfileService {
     }
 
     private void recordPeriodStart(PeriodProfile profile, LocalDate startDate) {
-        if (periodRecordRepository.existsByProfileIdAndStartDate(profile.getId(), startDate)) {
+        boolean alreadyExists = profile.getPeriodRecords().stream()
+                .anyMatch(r -> r.getStartDate().equals(startDate));
+        if (alreadyExists) {
             throw new IllegalStateException("A period with this start date already exists");
         }
 
-        if (periodRecordRepository.findFirstByProfileIdAndEndDateIsNullOrderByStartDateDescIdDesc(profile.getId()).isPresent()) {
+        boolean hasOpenPeriod = profile.getPeriodRecords().stream()
+                .anyMatch(r -> r.getEndDate() == null);
+        if (hasOpenPeriod) {
             throw new IllegalStateException("There is already an active period without an end date");
         }
 
-        PeriodRecord periodRecord = new PeriodRecord(profile, startDate);
-        profile.addPeriodRecord(periodRecord);
-        periodRecordRepository.save(periodRecord);
+        profile.getPeriodRecords().add(new PeriodRecord(UUID.randomUUID().toString(), startDate));
     }
 
     private void recordPeriodEnd(PeriodProfile profile, LocalDate endDate) {
-        PeriodRecord activePeriod = periodRecordRepository
-                .findFirstByProfileIdAndEndDateIsNullOrderByStartDateDescIdDesc(profile.getId())
+        PeriodRecord activePeriod = profile.getPeriodRecords().stream()
+                .filter(r -> r.getEndDate() == null)
+                .max(Comparator.comparing(PeriodRecord::getStartDate))
                 .orElseThrow(() -> new IllegalStateException("There is no active period to end"));
 
         if (endDate.isBefore(activePeriod.getStartDate())) {
@@ -297,12 +337,13 @@ public class PeriodProfileService {
         }
 
         activePeriod.setEndDate(endDate);
-        periodRecordRepository.save(activePeriod);
     }
 
     private void learnCycleLengthFromEvents(PeriodProfile profile) {
-        List<PeriodRecord> periodsDesc = periodRecordRepository
-                .findTop6ByProfileIdOrderByStartDateDescIdDesc(profile.getId());
+        List<PeriodRecord> periodsDesc = profile.getPeriodRecords().stream()
+                .sorted(Comparator.comparing(PeriodRecord::getStartDate).reversed())
+                .limit(6)
+                .toList();
 
         if (periodsDesc.size() < 2) {
             profile.setLearnedCycleLengthDays(null);
@@ -336,13 +377,16 @@ public class PeriodProfileService {
     }
 
     private void syncLatestPeriodDates(PeriodProfile profile) {
-        periodRecordRepository.findFirstByProfileIdOrderByStartDateDescIdDesc(profile.getId())
-            .map(PeriodRecord::getStartDate)
-            .ifPresent(profile::setLastPeriodStartDate);
+        profile.getPeriodRecords().stream()
+                .max(Comparator.comparing(PeriodRecord::getStartDate))
+                .map(PeriodRecord::getStartDate)
+                .ifPresent(profile::setLastPeriodStartDate);
 
-        periodRecordRepository.findFirstByProfileIdAndEndDateIsNotNullOrderByEndDateDescIdDesc(profile.getId())
-            .map(PeriodRecord::getEndDate)
-            .ifPresent(profile::setLastPeriodEndDate);
+        profile.getPeriodRecords().stream()
+                .filter(r -> r.getEndDate() != null)
+                .max(Comparator.comparing(PeriodRecord::getEndDate))
+                .map(PeriodRecord::getEndDate)
+                .ifPresent(profile::setLastPeriodEndDate);
     }
 
     private void recalculatePrediction(PeriodProfile profile) {
@@ -393,6 +437,10 @@ public class PeriodProfileService {
     }
 
     private PeriodProfileResponse toResponse(PeriodProfile profile) {
+        List<PeriodRecordResponse> records = profile.getPeriodRecords().stream()
+                .sorted(Comparator.comparing(PeriodRecord::getStartDate))
+                .map(r -> new PeriodRecordResponse(r.getId(), r.getStartDate(), r.getEndDate(), false))
+                .toList();
         return new PeriodProfileResponse(
                 profile.getId(),
                 profile.getCycleLengthDays(),
@@ -403,7 +451,8 @@ public class PeriodProfileService {
                 profile.getLastPeriodEndDate(),
                 profile.getLearnedCycleLengthDays(),
                 profile.getLearningSamples(),
-                profile.getNextPredictedStartDate()
+                profile.getNextPredictedStartDate(),
+                records
         );
     }
 }

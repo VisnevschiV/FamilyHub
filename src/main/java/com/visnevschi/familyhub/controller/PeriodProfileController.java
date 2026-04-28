@@ -1,5 +1,7 @@
 package com.visnevschi.familyhub.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.visnevschi.familyhub.dto.PeriodProfile.CreatePeriodProfileRequest;
+import com.visnevschi.familyhub.dto.PeriodProfile.FamilyMemberMonthResponse;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodDateRequest;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodMonthResponse;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodProfileResponse;
@@ -48,6 +51,11 @@ public class PeriodProfileController {
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
+    @GetMapping("/family")
+    public List<PeriodProfileResponse> getFamily(@AuthenticationPrincipal Jwt jwt) {
+        return periodProfileService.getFamilyPeriodsForEmail(jwt.getSubject());
+    }
+
     @PatchMapping
     public PeriodProfileResponse update(@AuthenticationPrincipal Jwt jwt,
                                         @Valid @RequestBody UpdatePeriodProfileRequest request) {
@@ -79,6 +87,13 @@ public class PeriodProfileController {
                                         @RequestParam int year,
                                         @RequestParam int month) {
         return periodProfileService.getMonthForEmail(jwt.getSubject(), year, month);
+    }
+
+    @GetMapping("/family/records/month")
+    public List<FamilyMemberMonthResponse> getFamilyMonth(@AuthenticationPrincipal Jwt jwt,
+                                                          @RequestParam int year,
+                                                          @RequestParam int month) {
+        return periodProfileService.getFamilyMonthForEmail(jwt.getSubject(), year, month);
     }
 
     @DeleteMapping

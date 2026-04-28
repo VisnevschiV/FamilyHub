@@ -1,6 +1,7 @@
 package com.visnevschi.familyhub.service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -79,6 +80,14 @@ public class PersonaService {
         }
 
         return personaRepository.save(persona);
+    }
+
+    public List<Persona> getFamilyMembersForEmail(String email) {
+        Persona persona = getForEmail(email);
+        if (persona.getFamily() == null) {
+            throw new IllegalStateException("Persona does not belong to a family");
+        }
+        return personaRepository.findByFamilyIdOrderByNameAsc(persona.getFamily().getId());
     }
 
     private UserAccount findAccountByEmail(String email) {

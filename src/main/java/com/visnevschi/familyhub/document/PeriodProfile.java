@@ -1,82 +1,69 @@
-package com.visnevschi.familyhub.dbenitity;
+package com.visnevschi.familyhub.document;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@Table(name = "period_profiles")
+@Document(collection = "period_profiles")
 public class PeriodProfile {
 
     @Id
-    @Column(name = "persona_id")
-    private Long id;
+    private Long id; // personaId
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @MapsId
-    @JoinColumn(name = "persona_id", nullable = false)
-    private Persona persona;
+    @Field("family_id")
+    @Indexed
+    private Long familyId;
 
-    @OneToMany(mappedBy = "profile")
-    @OrderBy("startDate ASC, id ASC")
+    @Field("period_records")
     private List<PeriodRecord> periodRecords = new ArrayList<>();
 
-    @Column(name = "cycle_length_days", nullable = false)
-    private Integer cycleLengthDays = 28;
+    @Field("cycle_length_days")
+    private Integer cycleLengthDays;
 
-    @Column(name = "period_length_days", nullable = false)
-    private Integer periodLengthDays = 5;
+    @Field("period_length_days")
+    private Integer periodLengthDays;
 
-    @Column(name = "prediction_enabled", nullable = false)
-    private Boolean predictionEnabled = Boolean.TRUE;
+    @Field("prediction_enabled")
+    private Boolean predictionEnabled;
 
-    @Column(name = "last_period_start_date")
+    @Field("last_period_start_date")
     private LocalDate lastPeriodStartDate;
 
-    @Column(name = "last_period_end_date")
+    @Field("last_period_end_date")
     private LocalDate lastPeriodEndDate;
 
-    @Column(name = "learned_cycle_length_days")
+    @Field("learned_cycle_length_days")
     private Integer learnedCycleLengthDays;
 
-    @Column(name = "learning_samples", nullable = false)
-    private Integer learningSamples = 0;
+    @Field("learning_samples")
+    private Integer learningSamples;
 
-    @Column(name = "next_predicted_start_date")
+    @Field("next_predicted_start_date")
     private LocalDate nextPredictedStartDate;
 
     protected PeriodProfile() {
     }
 
-    public PeriodProfile(Persona persona) {
-        this.persona = persona;
+    public PeriodProfile(Long personaId, Long familyId) {
+        this.id = personaId;
+        this.familyId = familyId;
     }
 
     public Long getId() {
         return id;
     }
 
-    public Persona getPersona() {
-        return persona;
+    public Long getFamilyId() {
+        return familyId;
     }
 
-    public void setPersona(Persona persona) {
-        this.persona = persona;
-    }
-
-    public Integer getCycleLengthDays() {
-        return cycleLengthDays;
+    public void setFamilyId(Long familyId) {
+        this.familyId = familyId;
     }
 
     public List<PeriodRecord> getPeriodRecords() {
@@ -87,12 +74,8 @@ public class PeriodProfile {
         this.periodRecords = periodRecords;
     }
 
-    public void addPeriodRecord(PeriodRecord periodRecord) {
-        if (periodRecord == null) {
-            return;
-        }
-        periodRecord.setProfile(this);
-        periodRecords.add(periodRecord);
+    public Integer getCycleLengthDays() {
+        return cycleLengthDays;
     }
 
     public void setCycleLengthDays(Integer cycleLengthDays) {
