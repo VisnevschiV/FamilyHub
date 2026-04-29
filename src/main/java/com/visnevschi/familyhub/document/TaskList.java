@@ -66,6 +66,10 @@ public class TaskList {
         return id;
     }
 
+    public Long getFamilyId() {
+        return familyId;
+    }
+
     public String getName() {
         return name;
     }

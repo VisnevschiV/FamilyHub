@@ -47,12 +47,6 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
         run: ./gradlew clean test bootJar
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: java-app
-          path: '${{ github.workspace }}/build/libs/*.jar'
-
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
@@ -62,10 +56,23 @@ jobs:
       contents: read #This is required for actions/checkout
   
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+
+      - name: Set up Java version
+        uses: actions/setup-java@v4
         with:
-          name: java-app
+          java-version: '17'
+          distribution: 'microsoft'
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Build deployable JAR
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+        run: ./gradlew bootJar
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -80,5 +87,5 @@ jobs:
         with:
           app-name: 'FamilyHub'
           slot-name: 'Production'
-          package: '*.jar'
+          package: '${{ github.workspace }}/build/libs/*.jar'
           
