@@ -14,11 +14,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 @Service
+@ConditionalOnBean(TaskListRepository.class)
 public class DailyUpdatesService {
     private final FamilyRepository familyRepository;
     private final TaskListRepository taskListRepository;
