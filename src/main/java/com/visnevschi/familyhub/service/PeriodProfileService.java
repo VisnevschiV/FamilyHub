@@ -1,4 +1,4 @@
-ackage com.visnevschi.familyhub.service;
+package com.visnevschi.familyhub.service;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
