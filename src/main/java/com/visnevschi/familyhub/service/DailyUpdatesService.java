@@ -64,7 +64,7 @@ public class DailyUpdatesService {
                 Task task = iterator.next();
                 if (task.isCompleted()) {
                     for (Long id : recipients) {
-                        completedCountByPersona.merge(id, 1, Integer::sum);
+                        completedCountByPersona.merge(id, 1, (a, b) -> a + b);
                     }
                     iterator.remove();
                     changed = true;
