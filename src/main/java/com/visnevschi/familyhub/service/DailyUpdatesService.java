@@ -1,11 +1,5 @@
 package com.visnevschi.familyhub.service;
 
-import com.visnevschi.familyhub.dbenitity.Persona;
-import com.visnevschi.familyhub.document.Task;
-import com.visnevschi.familyhub.document.TaskList;
-import com.visnevschi.familyhub.repository.FamilyRepository;
-import com.visnevschi.familyhub.repository.TaskListRepository;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -16,8 +10,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.visnevschi.familyhub.dbenitity.Persona;
+import com.visnevschi.familyhub.document.Task;
+import com.visnevschi.familyhub.document.TaskList;
+import com.visnevschi.familyhub.repository.FamilyRepository;
+import com.visnevschi.familyhub.repository.TaskListRepository;
 
 @Service
 @ConditionalOnBean(TaskListRepository.class)
@@ -34,8 +34,8 @@ public class DailyUpdatesService {
         this.notificationService = notificationService;
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
-    @Transactional(readOnly = true)
+    @Scheduled(cron = "0 0 * * * *")
+    @Transactional
     public void deleteCompletedTasks() {
         familyRepository.findAll().forEach(family -> {
             Set<Long> allMembers = family.getMembers().stream()
