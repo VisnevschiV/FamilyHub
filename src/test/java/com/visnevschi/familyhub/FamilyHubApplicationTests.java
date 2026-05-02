@@ -2,7 +2,10 @@ package com.visnevschi.familyhub;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+
+import com.visnevschi.familyhub.service.DailyUpdatesService;
 
 @SpringBootTest(properties = {
     "spring.datasource.url=jdbc:h2:mem:familyhub_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
@@ -17,6 +20,9 @@ import org.springframework.test.context.ActiveProfiles;
 })
 @ActiveProfiles("test")
 class FamilyHubApplicationTests {
+
+    @MockBean
+    private DailyUpdatesService dailyUpdatesService;
 
     @Test
     void contextLoads() {
