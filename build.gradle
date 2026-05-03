@@ -39,6 +39,10 @@ dependencies {
     testImplementation 'com.h2database:h2'
     
 
+    //email
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    
     runtimeOnly 'org.postgresql:postgresql'
     
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
