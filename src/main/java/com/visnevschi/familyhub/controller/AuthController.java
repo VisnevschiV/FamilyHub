@@ -19,46 +19,61 @@ import com.visnevschi.familyhub.dto.UserAccount.RefreshRequest;
 import com.visnevschi.familyhub.dto.UserAccount.RegisterRequest;
 import com.visnevschi.familyhub.dto.UserAccount.RegisterResponse;
 import com.visnevschi.familyhub.dto.UserAccount.UserAccountDto;
+import com.visnevschi.familyhub.dto.UserAccount.ConfirmEmailRequest;
 import com.visnevschi.familyhub.service.AuthService;
+import com.visnevschi.familyhub.service.PendingUserService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final PendingUserService pendingUserService;
     private final String accessCookieName;
     private final String refreshCookieName;
     private final boolean cookieSecure;
     private final String cookieSameSite;
 
     public AuthController(AuthService authService,
+                          PendingUserService pendingUserService,
                           @Value("${app.jwt.cookie-access-name:access_token}") @NonNull String accessCookieName,
                           @Value("${app.jwt.cookie-refresh-name:refresh_token}") @NonNull String refreshCookieName,
                           @Value("${app.jwt.cookie-secure:false}") boolean cookieSecure,
                           @Value("${app.jwt.cookie-same-site:Lax}") @NonNull String cookieSameSite) {
         this.authService = authService;
+        this.pendingUserService = pendingUserService;
         this.accessCookieName = Objects.requireNonNull(accessCookieName);
         this.refreshCookieName = Objects.requireNonNull(refreshCookieName);
         this.cookieSecure = cookieSecure;
         this.cookieSameSite = Objects.requireNonNull(cookieSameSite);
     }
 
+ //   TODO: make it throw errors
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public RegisterResponse register(@Valid @RequestBody RegisterRequest registerRequest){
-        authService.register(
-                registerRequest.email(),
-                registerRequest.password(),
-                registerRequest.name(),
-            registerRequest.birthday(),
-                registerRequest.gender()
-        );
-        return new RegisterResponse("Registration successful");
+        try {
+            pendingUserService.createPendingUser(registerRequest);
+            return new RegisterResponse("Registration successful");
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+    @PostMapping("/confirm")
+    public RegisterResponse confirmEmail(@Valid @RequestBody ConfirmEmailRequest confirmEmailRequest) {
+        try {
+            pendingUserService.confirmPendingUser(confirmEmailRequest.getCode(), confirmEmailRequest.getEmail());
+            return new RegisterResponse("Email confirmed successfully");
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid or expired confirmation code");
+        }
     }
 
     @PostMapping("/login")

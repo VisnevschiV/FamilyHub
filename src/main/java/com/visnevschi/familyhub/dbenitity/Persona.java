@@ -88,6 +88,10 @@ public class Persona {
         return avatarUrl;
     }
 
+    public String getEmail() {
+        return userAccount.getEmail();
+    }
+
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
     }

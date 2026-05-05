@@ -2,6 +2,8 @@ package com.visnevschi.familyhub.dbenitity;
 
 import java.time.Instant;
 
+import com.visnevschi.familyhub.utils.GeneratedCode;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,7 +16,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "family_invite")
-public class FamilyInvite {
+public class FamilyInvite implements GeneratedCode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,13 +32,7 @@ public class FamilyInvite {
     @JoinColumn(name = "family_id", nullable = false)
     private Family family;
 
-    protected FamilyInvite() {
-    }
-
-    public FamilyInvite(String code, Instant expiresAt, Family family) {
-        this.code = code;
-        this.expiresAt = expiresAt;
-        this.family = family;
+    public FamilyInvite() {
     }
 
     public Long getId() {
@@ -50,8 +46,20 @@ public class FamilyInvite {
     public Instant getExpiresAt() {
         return expiresAt;
     }
-
+    public void setFamily(Family family) {
+        this.family = family;
+    }
     public Family getFamily() {
         return family;
+    }
+
+    @Override
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    @Override
+    public void setExpiresAt(Instant expiresAt) {
+        this.expiresAt = expiresAt;
     }
 }

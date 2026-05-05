@@ -17,32 +17,30 @@ import com.visnevschi.familyhub.exception.NotFoundException;
 import com.visnevschi.familyhub.repository.FamilyInviteRepository;
 import com.visnevschi.familyhub.repository.FamilyRepository;
 import com.visnevschi.familyhub.repository.PersonaRepository;
+import com.visnevschi.familyhub.service.CodeService;
 
 @Service
 @Transactional
 public class FamilyService {
 
-    private static final int CODE_LENGTH = 6;
-    private static final String CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
     private final PersonaRepository personaRepository;
     private final FamilyRepository familyRepository;
     private final FamilyInviteRepository familyInviteRepository;
     private final NotificationService notificationService;
+    private final CodeService codeService;
 
-    private final long joinCodeTtlSeconds;
-    private final SecureRandom secureRandom = new SecureRandom();
+
 
     public FamilyService(PersonaRepository personaRepository,
                          FamilyRepository familyRepository,
                          FamilyInviteRepository familyInviteRepository,
                          NotificationService notificationService,
-                         @Value("${app.family.join-code-ttl-seconds:900}") long joinCodeTtlSeconds) {
+                         CodeService codeService) {
         this.personaRepository = personaRepository;
         this.familyRepository = familyRepository;
         this.familyInviteRepository = familyInviteRepository;
-        this.joinCodeTtlSeconds = joinCodeTtlSeconds;
         this.notificationService = notificationService;
+        this.codeService = codeService;
     }
 
     public Family createFamily(String email, String name) {
@@ -85,11 +83,10 @@ public class FamilyService {
         Family family = requireFamily(persona);
 
         familyInviteRepository.deleteByFamilyId(family.getId());
+        FamilyInvite invite = new FamilyInvite();
+        invite.setFamily(family);
+        codeService.generateUniqueCode(familyInviteRepository, invite);//code and expires are set insite invite
 
-        String code = generateUniqueCode();
-        Instant expiresAt = Instant.now().plusSeconds(joinCodeTtlSeconds);
-
-        FamilyInvite invite = new FamilyInvite(code, expiresAt, family);
         return familyInviteRepository.save(invite);
     }
 
@@ -139,21 +136,6 @@ public class FamilyService {
         return family;
     }
 
-    private String generateUniqueCode() {
-        String code = generateCode();
-        while (familyInviteRepository.findByCode(code).isPresent()) {
-            code = generateCode();
-        }
-        return code;
-    }
-
-    private String generateCode() {
-        StringBuilder code = new StringBuilder(CODE_LENGTH);
-        for (int i = 0; i < CODE_LENGTH; i++) {
-            code.append(CODE_CHARS.charAt(secureRandom.nextInt(CODE_CHARS.length())));
-        }
-        return code.toString();
-    }
 
     public Long getFamilyIdForUser(String email) {
         Persona persona = getPersonaForEmail(email);

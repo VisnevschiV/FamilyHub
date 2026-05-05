@@ -35,7 +35,7 @@ public class DailyUpdatesService {
         this.notificationService = notificationService;
     }
 
-    @Scheduled(cron = "0 0 * * * *", zone = "Europe/Zurich")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Europe/Zurich")
     @Transactional
     public void deleteCompletedTasks() {
         log.info("[DailyUpdatesService] deleteCompletedTasks triggered at {}", java.time.LocalDateTime.now());

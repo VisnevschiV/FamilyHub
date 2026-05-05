@@ -24,13 +24,16 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final PersonaRepository personaRepository;
     private final NotificationEmitterRegistry emitterRegistry;
+    private final EmailService emailService;
 
     public NotificationService(NotificationRepository notificationRepository,
                                PersonaRepository personaRepository,
-                               NotificationEmitterRegistry emitterRegistry) {
+                               NotificationEmitterRegistry emitterRegistry,
+                               EmailService emailService) {
         this.notificationRepository = notificationRepository;
         this.personaRepository = personaRepository;
         this.emitterRegistry = emitterRegistry;
+        this.emailService = emailService;
     }
 
     @Async("notificationExecutor")
@@ -45,6 +48,10 @@ public class NotificationService {
                     notification.getCreatedAt(),
                     notification.isRead());
             emitterRegistry.broadcast(personaId, response);
+
+            // Send email notification
+            emailService.sendEmailNotification(personaId, message);
+
         } catch (Exception e) {
             log.error("Failed to save notification for personaId={}: {}", personaId, e.getMessage());
         }
