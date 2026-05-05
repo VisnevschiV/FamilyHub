@@ -49,9 +49,6 @@ public class NotificationService {
                     notification.isRead());
             emitterRegistry.broadcast(personaId, response);
 
-            // Send email notification
-            emailService.sendEmailNotification(personaId, message);
-
         } catch (Exception e) {
             log.error("Failed to save notification for personaId={}: {}", personaId, e.getMessage());
         }
