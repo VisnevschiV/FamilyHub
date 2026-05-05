@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,8 +38,15 @@ public class EmailService {
             "You have a new notification: " + message
         ));
     }
+    
+    @Async
+    public void sendConfirmationEmail(String to, String code) {
+        String subject = "FamilyHub Registration Confirmation";
+        String body = "Thank you for registering with FamilyHub! Please use the following code to confirm your email address: " + code;
+        sendEmail(to, subject, body);
+    }
 
-
+    @Async
     public void sendEmail(String to, String subject, String body) {
         log.info("Sending email to: {}", to);
         SimpleMailMessage msg = new SimpleMailMessage();

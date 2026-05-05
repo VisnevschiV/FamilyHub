@@ -36,11 +36,11 @@ public class AuthService {
         this.refreshTtlSeconds = refreshTtlSeconds;
     }
 
-    public void register(String email, String rawPassword, String name, LocalDate birthday, Gender gender) {
+    public void register(String email, String EncodedPassword, String name, LocalDate birthday, Gender gender) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email is required");
         }
-        if (rawPassword == null || rawPassword.isBlank()) {
+        if (EncodedPassword == null || EncodedPassword.isBlank()) {
             throw new IllegalArgumentException("Password is required");
         }
         if (name == null || name.isBlank()) {
@@ -61,7 +61,7 @@ public class AuthService {
 
         UserAccount userAccount = new UserAccount();
         userAccount.setEmail(normalizedEmail);
-        userAccount.setPassword(passwordEncoder.encode(rawPassword));
+        userAccount.setPassword(EncodedPassword);
 
         UserAccount savedAccount = userAccountRepository.save(userAccount);
         personaService.createForUser(savedAccount, name.trim(), birthday, gender);
