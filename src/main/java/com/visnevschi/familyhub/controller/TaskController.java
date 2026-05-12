@@ -46,18 +46,18 @@ public class TaskController {
     public Task createTask(@AuthenticationPrincipal Jwt jwt,
                                 @Valid @RequestBody TaskCreationRequest request
     ) {
-        return taskService.createTask(jwt.getSubject(), request.getListID(), request.getTaskName());
+        return taskService.createTask(jwt.getSubject(), request.getListId(), request.getTaskName());
     }
     
     @DeleteMapping("")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTask(@AuthenticationPrincipal Jwt jwt, @RequestBody TaskDeleteRequest request) {
-        taskService.deleteTask(jwt.getSubject(), request.getListID(), request.getTaskID());
+        taskService.deleteTask(jwt.getSubject(), request.getListId(), request.getTaskId());
     }
 
     @PatchMapping("")
     public Task modifyTask(@AuthenticationPrincipal Jwt jwt, @RequestBody TaskModificationRequest request) {
-        return taskService.modifyTask(jwt.getSubject(), request.getListID(), request.getTaskID(), request.getNewName(), request.getCompleted());
+        return taskService.modifyTask(jwt.getSubject(), request.getListId(), request.getTaskId(), request.getNewName(), request.getCompleted());
     }
 
     //Lists operations

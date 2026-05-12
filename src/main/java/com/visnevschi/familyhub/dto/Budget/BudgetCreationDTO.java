@@ -2,14 +2,14 @@ package com.visnevschi.familyhub.dto.Budget;
 
 public class BudgetCreationDTO {
     private String name;
-    private String currencyISOCode;
+    private String currencyIsoCode;
     private String parentBudgetId;
 
     public BudgetCreationDTO() {}
 
-    public BudgetCreationDTO(String name, String currencyISOCode, String parentBudgetId) {
+    public BudgetCreationDTO(String name, String currencyIsoCode, String parentBudgetId) {
         this.name = name;
-        this.currencyISOCode = currencyISOCode;
+        this.currencyIsoCode = currencyIsoCode;
         this.parentBudgetId = parentBudgetId;
     }
 
@@ -21,12 +21,12 @@ public class BudgetCreationDTO {
         this.name = name;
     }
 
-    public String getCurrencyISOCode() {
-        return currencyISOCode;
+    public String getCurrencyIsoCode() {
+        return currencyIsoCode;
     }
 
-    public void setCurrencyISOCode(String currencyISOCode) {
-        this.currencyISOCode = currencyISOCode;
+    public void setCurrencyIsoCode(String currencyIsoCode) {
+        this.currencyIsoCode = currencyIsoCode;
     }
 
     public String getParentBudgetId() {

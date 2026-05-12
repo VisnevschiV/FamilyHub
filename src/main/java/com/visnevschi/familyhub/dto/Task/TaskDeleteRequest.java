@@ -5,16 +5,16 @@ import jakarta.validation.constraints.NotBlank;
 public class TaskDeleteRequest {
     
     @NotBlank
-    String listID;
+    String listId;
 
     @NotBlank
-    String taskID;
+    String taskId;
 
-    public String getListID() {
-        return listID;
+    public String getListId() {
+        return listId;
     }
 
-    public String getTaskID() {
-        return taskID;
+    public String getTaskId() {
+        return taskId;
     }
 }

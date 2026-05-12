@@ -1,17 +1,17 @@
 package com.visnevschi.familyhub.dto.Task;
 
 public class TaskModificationRequest {
-        String listID;
-        String taskID;
+        String listId;
+        String taskId;
         String newName;
         Boolean completed;
     
-        public String getListID() {
-            return listID;
+        public String getListId() {
+            return listId;
         }
     
-        public String getTaskID() {
-            return taskID;
+        public String getTaskId() {
+            return taskId;
         }
     
         public String getNewName() {

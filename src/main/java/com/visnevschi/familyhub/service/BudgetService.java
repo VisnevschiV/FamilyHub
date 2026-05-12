@@ -138,10 +138,10 @@ public class BudgetService {
     }
 
     public void addTransaction(Long familyId, String budgetId, TransactionCreationDTO request) {
-        if (request.getCurrencyISOCode() == null) {
-            throw new IllegalArgumentException("currencyISOCode is required");
+        if (request.getCurrencyIsoCode() == null) {
+            throw new IllegalArgumentException("currencyIsoCode is required");
         }
-        validateCurrency(request.getCurrencyISOCode());
+        validateCurrency(request.getCurrencyIsoCode());
         
         Budget rootBudget = requireRootBudget(familyId);
         Budget budget = DFSBudgetSearch(rootBudget, budgetId);
@@ -149,13 +149,13 @@ public class BudgetService {
             throw new NotFoundException("Budget not found");
         }
         
-        BigDecimal normalizedAmount = normalizeBigDecimal(request.getAmount(), request.getCurrencyISOCode());
+        BigDecimal normalizedAmount = normalizeBigDecimal(request.getAmount(), request.getCurrencyIsoCode());
         Transaction transaction = new Transaction(
             UUID.randomUUID().toString(),
             request.getDescription(),
             normalizedAmount,
             System.currentTimeMillis(),
-            request.getCurrencyISOCode()
+            request.getCurrencyIsoCode()
         );
 
         if (budget.getTransactions() == null) {
@@ -180,8 +180,8 @@ public class BudgetService {
     }
 
     public void modifyTransaction(Long familyId, String budgetId, String transactionId, TransactionCreationDTO request) {
-        if (request.getCurrencyISOCode() != null) {
-            validateCurrency(request.getCurrencyISOCode());
+        if (request.getCurrencyIsoCode() != null) {
+            validateCurrency(request.getCurrencyIsoCode());
         }
         
         Budget rootBudget = requireRootBudget(familyId);
@@ -201,11 +201,11 @@ public class BudgetService {
                 }
                 if (request.getAmount() != null) {
                     BigDecimal normalizedAmount = normalizeBigDecimal(request.getAmount(), 
-                        request.getCurrencyISOCode() != null ? request.getCurrencyISOCode() : transaction.getCurrencyISOCode());
+                        request.getCurrencyIsoCode() != null ? request.getCurrencyIsoCode() : transaction.getCurrencyISOCode());
                     transaction.setAmount(normalizedAmount);
                 }
-                if (request.getCurrencyISOCode() != null) {
-                    transaction.setCurrencyISOCode(request.getCurrencyISOCode());
+                if (request.getCurrencyIsoCode() != null) {
+                    transaction.setCurrencyISOCode(request.getCurrencyIsoCode());
                 }
                 found = true;
                 break;
