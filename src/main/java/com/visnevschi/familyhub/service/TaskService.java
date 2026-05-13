@@ -21,7 +21,7 @@ public class TaskService {
         this.notificationService = notificationService;
     }
 
-    public void createTask(String userEmail, String listId, String taskName) {
+    public Task createTask(String userEmail, String listId, String taskName) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
         Long personaId = notificationService.resolvePersonaId(userEmail);
         TaskList l = requireAccessibleTaskList(listId, familyId, personaId);
@@ -30,6 +30,7 @@ public class TaskService {
         l.addTask(t);
         taskListRepository.save(l);
         notificationService.createNotification(familyId, "New task added: " + taskName);
+        return t;
     }
 
     public void deleteTask(String userEmail, String listId, String taskId) {
@@ -41,7 +42,7 @@ public class TaskService {
         taskListRepository.save(l);
     }
 
-    public void modifyTask(String userEmail, String listId, String taskId, String newName, Boolean completed) {
+    public Task modifyTask(String userEmail, String listId, String taskId, String newName, Boolean completed) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
         Long personaId = notificationService.resolvePersonaId(userEmail);
         TaskList l = requireAccessibleTaskList(listId, familyId, personaId);
@@ -57,6 +58,7 @@ public class TaskService {
             t.setCompleted(completed);
         }
         taskListRepository.save(l);
+        return t;
     }
 
     private TaskList requireAccessibleTaskList(String listId, Long familyId, Long personaId) {

@@ -14,16 +14,16 @@ public class TransactionCreationDTO {
     @NotNull(message = "amount is required")
     private BigDecimal amount;
 
-    @NotBlank(message = "currencyISOCode is required")
-    private String currencyISOCode;
+    @NotBlank(message = "currencyIsoCode is required")
+    private String currencyIsoCode;
 
     public TransactionCreationDTO() {}
 
-    public TransactionCreationDTO(String budgetId, String description, BigDecimal amount, String currencyISOCode) {
+    public TransactionCreationDTO(String budgetId, String description, BigDecimal amount, String currencyIsoCode) {
         this.budgetId = budgetId;
         this.description = description;
         this.amount = amount;
-        this.currencyISOCode = currencyISOCode;
+        this.currencyIsoCode = currencyIsoCode;
     }
 
     public String getBudgetId() {
@@ -50,11 +50,11 @@ public class TransactionCreationDTO {
         this.amount = amount;
     }
 
-    public String getCurrencyISOCode() {
-        return currencyISOCode;
+    public String getCurrencyIsoCode() {
+        return currencyIsoCode;
     }
 
-    public void setCurrencyISOCode(String currencyISOCode) {
-        this.currencyISOCode = currencyISOCode;
+    public void setCurrencyIsoCode(String currencyIsoCode) {
+        this.currencyIsoCode = currencyIsoCode;
     }
 }

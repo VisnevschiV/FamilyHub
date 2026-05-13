@@ -15,16 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.visnevschi.familyhub.document.Task;
+import com.visnevschi.familyhub.document.TaskList;
 import com.visnevschi.familyhub.dto.Task.TaskCreationRequest;
 import com.visnevschi.familyhub.dto.Task.TaskDeleteRequest;
 import com.visnevschi.familyhub.dto.Task.TaskModificationRequest;
-
-
 import com.visnevschi.familyhub.dto.TaskList.TaskListCreationRequest;
 import com.visnevschi.familyhub.dto.TaskList.TaskListModifyRequest;
 import com.visnevschi.familyhub.dto.TaskList.TaskListsResponse;
-
-
 import com.visnevschi.familyhub.service.TaskListService;
 import com.visnevschi.familyhub.service.TaskService;
 
@@ -44,30 +42,33 @@ public class TaskController {
 
 
     @PostMapping("")
-    public void createTask(@AuthenticationPrincipal Jwt jwt,
+    @ResponseStatus(HttpStatus.CREATED)
+    public Task createTask(@AuthenticationPrincipal Jwt jwt,
                                 @Valid @RequestBody TaskCreationRequest request
     ) {
-        taskService.createTask(jwt.getSubject(), request.getListID(), request.getTaskName());
+        return taskService.createTask(jwt.getSubject(), request.getListId(), request.getTaskName());
     }
     
     @DeleteMapping("")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTask(@AuthenticationPrincipal Jwt jwt, @RequestBody TaskDeleteRequest request) {
-        taskService.deleteTask(jwt.getSubject(), request.getListID(), request.getTaskID());
+        taskService.deleteTask(jwt.getSubject(), request.getListId(), request.getTaskId());
     }
 
     @PatchMapping("")
-    public void modifyTask(@AuthenticationPrincipal Jwt jwt, @RequestBody TaskModificationRequest request) {
-        taskService.modifyTask(jwt.getSubject(), request.getListID(), request.getTaskID(), request.getNewName(), request.getCompleted());
+    public Task modifyTask(@AuthenticationPrincipal Jwt jwt, @RequestBody TaskModificationRequest request) {
+        return taskService.modifyTask(jwt.getSubject(), request.getListId(), request.getTaskId(), request.getNewName(), request.getCompleted());
     }
 
     //Lists operations
     //TODO: new controller for them?
     //TODO: return the ID of the created list maybe? not to read it again to get it
     @PostMapping("/createList")
-    public void  postMethodName(@AuthenticationPrincipal Jwt jwt,
+    @ResponseStatus(HttpStatus.CREATED)
+    public TaskList createList(@AuthenticationPrincipal Jwt jwt,
                                    @Valid @RequestBody TaskListCreationRequest request
     ) {
-        taskListService.createTaskList(request, jwt.getSubject());
+        return taskListService.createTaskList(request, jwt.getSubject());
     }
 
     @GetMapping("/getLists")
@@ -82,7 +83,7 @@ public class TaskController {
     }
     
     @PatchMapping("/lists")
-    public void updateList(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody TaskListModifyRequest request) {
-        taskListService.modifyTaskListName(request.getId(), request.getNewName(), request.getParticipants(), jwt.getSubject());
+    public TaskList updateList(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody TaskListModifyRequest request) {
+        return taskListService.modifyTaskListName(request.getId(), request.getNewName(), request.getParticipants(), jwt.getSubject());
     }
 }

@@ -44,9 +44,9 @@ public class BudgetController {
     public Budget createBudget(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody BudgetCreationDTO request) {
         Long familyId = familyService.getFamilyIdForUser(jwt.getSubject());
         if (request.getParentBudgetId() != null) {
-            budgetService.createSubBudget(familyId, request.getParentBudgetId(), request.getName(), request.getCurrencyISOCode());
+            budgetService.createSubBudget(familyId, request.getParentBudgetId(), request.getName(), request.getCurrencyIsoCode());
         } else {
-            budgetService.createNewBudgetForFamily(familyId, request.getName(), request.getCurrencyISOCode());
+            budgetService.createNewBudgetForFamily(familyId, request.getName(), request.getCurrencyIsoCode());
         }
         return budgetService.getBudgetForFamily(familyId);
     }
@@ -61,7 +61,7 @@ public class BudgetController {
     @PatchMapping("/{budgetId}")
     public Budget modifyBudget(@AuthenticationPrincipal Jwt jwt, @PathVariable String budgetId, @Valid @RequestBody BudgetCreationDTO request) {
         Long familyId = familyService.getFamilyIdForUser(jwt.getSubject());
-        budgetService.modifyBudget(familyId, budgetId, request.getName(), request.getCurrencyISOCode());
+        budgetService.modifyBudget(familyId, budgetId, request.getName(), request.getCurrencyIsoCode());
         return budgetService.getBudgetForFamily(familyId);
     }
 
