@@ -6,14 +6,14 @@ import jakarta.validation.constraints.Size;
 public class TaskCreationRequest {
     
     @NotBlank
-    String listID;
+    String listId;
 
     @NotBlank
     @Size(max = 200)
     String taskName;
 
-    public String getListID() {
-        return listID;
+    public String getListId() {
+        return listId;
     }
 
     public String getTaskName() {

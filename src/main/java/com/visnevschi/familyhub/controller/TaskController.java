@@ -18,13 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.visnevschi.familyhub.dto.Task.TaskCreationRequest;
 import com.visnevschi.familyhub.dto.Task.TaskDeleteRequest;
 import com.visnevschi.familyhub.dto.Task.TaskModificationRequest;
-
-
 import com.visnevschi.familyhub.dto.TaskList.TaskListCreationRequest;
 import com.visnevschi.familyhub.dto.TaskList.TaskListModifyRequest;
 import com.visnevschi.familyhub.dto.TaskList.TaskListsResponse;
-
-
 import com.visnevschi.familyhub.service.TaskListService;
 import com.visnevschi.familyhub.service.TaskService;
 
@@ -47,17 +43,17 @@ public class TaskController {
     public void createTask(@AuthenticationPrincipal Jwt jwt,
                                 @Valid @RequestBody TaskCreationRequest request
     ) {
-        taskService.createTask(jwt.getSubject(), request.getListID(), request.getTaskName());
+        taskService.createTask(jwt.getSubject(), request.getListId(), request.getTaskName());
     }
     
     @DeleteMapping("")
     public void deleteTask(@AuthenticationPrincipal Jwt jwt, @RequestBody TaskDeleteRequest request) {
-        taskService.deleteTask(jwt.getSubject(), request.getListID(), request.getTaskID());
+        taskService.deleteTask(jwt.getSubject(), request.getListId(), request.getTaskId());
     }
 
     @PatchMapping("")
     public void modifyTask(@AuthenticationPrincipal Jwt jwt, @RequestBody TaskModificationRequest request) {
-        taskService.modifyTask(jwt.getSubject(), request.getListID(), request.getTaskID(), request.getNewName(), request.getCompleted());
+        taskService.modifyTask(jwt.getSubject(), request.getListId(), request.getTaskId(), request.getNewName(), request.getCompleted());
     }
 
     //Lists operations
