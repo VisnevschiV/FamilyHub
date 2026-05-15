@@ -33,8 +33,8 @@ public class CalendarController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createEvent(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CalendarEventCreationRequest request) {
-        calendarService.createEvent(jwt.getSubject(), request.getTitle(), request.getDescription(), request.getTime(), request.getParticipants());
+    public CalendarEvent createEvent(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CalendarEventCreationRequest request) {
+        return calendarService.createEvent(jwt.getSubject(), request.getTitle(), request.getDescription(), request.getTime(), request.getParticipants());
     }
 
     @DeleteMapping("/{eventId}")
@@ -44,9 +44,8 @@ public class CalendarController {
     }
 
     @PatchMapping("/{eventId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateEvent(@AuthenticationPrincipal Jwt jwt, @PathVariable String eventId, @Valid @RequestBody CalendarEventCreationRequest request) {
-        calendarService.updateEvent(jwt.getSubject(), eventId, request.getTitle(), request.getDescription(), request.getTime(), request.getParticipants());
+    public CalendarEvent updateEvent(@AuthenticationPrincipal Jwt jwt, @PathVariable String eventId, @Valid @RequestBody CalendarEventCreationRequest request) {
+        return calendarService.updateEvent(jwt.getSubject(), eventId, request.getTitle(), request.getDescription(), request.getTime(), request.getParticipants());
     }
 
     @GetMapping("")

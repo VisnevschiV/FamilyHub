@@ -1,30 +1,69 @@
 # FamilyHub
 
-**A secure, learning-focused Spring Boot backend for a family hub.**
+**A secure Spring Boot backend for a family hub.**
 
-FamilyHub is a backend API project built to practice Java, Spring Boot, and common backend patterns like authentication, DTOs, and persistence.
+FamilyHub is a backend API that centralizes family life: shared tasks, budgets, calendar events, real-time notifications, and health tracking — all behind secure JWT authentication.
 
 ## Features
 
-### Current
-- **Authentication**: Register, login, refresh tokens (JWT access token + refresh token).
-- **Cookie-based auth**: Access token stored in HttpOnly cookies.
-- **Persona profile**: Create, read, and update the current user profile.
-- **OpenAPI docs**: Swagger UI enabled.
+### Authentication & Accounts
+- Register, login, logout, and token refresh (JWT access token + refresh token)
+- Email confirmation flow for new accounts
+- HttpOnly cookie-based token transport
+- Secure password storage
+
+### Family Management
+- Create a family group and invite members via time-limited join codes
+- View all family members and their profiles
+
+### Persona Profiles
+- Create and update your personal profile (name, birthday, gender, avatar)
+
+### Shared Task Lists
+- Create task lists and assign participants from the family
+- Add, update, complete, and delete tasks
+- Daily scheduled cleanup: completed tasks are removed, recurring tasks reset automatically
+
+### Family Budget & Finance Tracker
+- Create family budgets with multi-currency support
+- Record income/expense transactions
+- Nested sub-budgets for granular tracking
+
+### Shared Calendar
+- Create, update, and delete family calendar events
+- Participants receive notifications when events are created
+- Automatic email reminders 10 minutes before events
+
+### Real-time Notifications
+- Server-Sent Events (SSE) stream for live push notifications
+- Paginated notification history with read/unread tracking
+- Async processing — notifications never block the main request
+
+### Period Tracker
+- Private menstrual cycle profiles per persona
+- Log period start/end events
+- Prediction algorithm that learns from historical records
+- Month-view summaries; family members can optionally share visibility
+
+### Observability
+- Correlation ID injected on every request for end-to-end tracing
+- Structured logging (WARN at root, INFO for app code)
+- Global exception handler with standardized `ApiError` responses and error reference IDs
+- OpenAPI / Swagger UI enabled
 
 ### Roadmap
-- **Shared to-do lists**
-- **Secure chat**
-- **Event tracking and shared calendar**
-- **Finance manager**
+- **Secure in-app chat**
 
 
 ## Tech Stack
 - **Language**: Java 17
 - **Framework**: Spring Boot 3.4
-- **Security**: Spring Security (JWT resource server)
-- **ORM**: Hibernate / Spring Data JPA
-- **Database**: PostgreSQL
+- **Security**: Spring Security (JWT resource server, HMAC SHA-256)
+- **Databases**: PostgreSQL (auth, personas, families) + MongoDB (tasks, budgets, calendar, notifications, period data)
+- **ORM**: Hibernate / Spring Data JPA + Spring Data MongoDB
+- **Real-time**: Server-Sent Events (SSE)
+- **Email**: Gmail SMTP (async)
+- **API Docs**: Swagger / OpenAPI 3
 - **Build**: Gradle
 
 
@@ -33,14 +72,22 @@ FamilyHub is a backend API project built to practice Java, Spring Boot, and comm
 ### Prerequisites
 - [JDK 17](https://adoptium.net/)
 - [PostgreSQL](https://www.postgresql.org/)
+- [MongoDB](https://www.mongodb.com/try/download/community)
 
-### Configure
-Update [src/main/resources/application.properties](src/main/resources/application.properties) with your database credentials and a JWT secret.
+### Environment Variables
+Set the following before running:
 
-For production or cloud deployments, you can set PostgreSQL values with environment variables instead of editing properties directly:
-- `SPRING_DATASOURCE_URL` (example: `jdbc:postgresql://<server>.postgres.database.azure.com:5432/familyhub_db?sslmode=require`)
-- `SPRING_DATASOURCE_USERNAME` (example: `familyhub_admin`)
-- `SPRING_DATASOURCE_PASSWORD`
+| Variable | Example |
+|----------|---------|
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/familyhub_db` |
+| `SPRING_DATASOURCE_USERNAME` | `familyhub_admin` |
+| `SPRING_DATASOURCE_PASSWORD` | `yourpassword` |
+| `SPRING_DATA_MONGODB_URI` | `mongodb://localhost:27017/familyhub` |
+| `JWT_SECRET` | `<base64-encoded-secret>` |
+| `SPRING_MAIL_USERNAME` | `your@gmail.com` |
+| `SPRING_MAIL_PASSWORD` | `<app-password>` |
+
+For cloud deployments, see the [Moving PostgreSQL to Azure](#moving-postgresql-to-azure) section below.
 
 ### Run
 ```bash
@@ -55,16 +102,59 @@ gradlew.bat bootRun
 Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 
 ## Key Endpoints
+
+### Auth
 - `POST /auth/register`
+- `POST /auth/confirm-email`
 - `POST /auth/login`
 - `POST /auth/refresh`
+- `POST /auth/logout`
+
+### Persona
 - `GET /personas/me`
 - `POST /personas/me`
 - `PATCH /personas/me`
+- `GET /personas/family-members`
+
+### Family
+- `POST /family/create`
+- `POST /family/join`
+- `GET /family`
+- `POST /family/generate-code`
+
+### Tasks
+- `GET /task-lists`
+- `POST /task-lists`
+- `POST /task-lists/{id}/tasks`
+- `PATCH /task-lists/{id}/tasks/{taskId}`
+- `DELETE /task-lists/{id}/tasks/{taskId}`
+
+### Budget
+- `POST /budgets`
+- `GET /budgets`
+- `POST /budgets/{id}/transactions`
+
+### Calendar
+- `POST /calendar`
+- `PATCH /calendar/{id}`
+- `DELETE /calendar/{id}`
+
+### Notifications
+- `GET /notifications`
+- `PATCH /notifications/{id}/read`
+- `GET /notifications/stream` (SSE)
+
+### Period Tracker
+- `POST /period-profile`
+- `GET /period-profile`
+- `POST /period-profile/record`
+- `GET /period-profile/month`
 
 ## Notes
-- This project is intentionally small and focused on learning.
-- Tokens are sent via cookies by default; adjust cookie flags in properties for production.
+- Tokens are sent via cookies by default; adjust cookie flags in `application.properties` for production.
+- MongoDB auto-index creation is enabled (`spring.data.mongodb.auto-index-creation=true`); disable in production if managing indexes manually.
+- Access token TTL: 1 hour. Refresh token TTL: 30 days.
+- Family join codes expire after 15 minutes.
 - Team/dev process is documented in [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md).
 
 ## Moving PostgreSQL to Azure

@@ -26,13 +26,14 @@ public class TaskListService {
         this.notificationService = notificationService;
     }
 
-    public void createTaskList(TaskListCreationRequest request, String userEmail) {
+    public TaskList createTaskList(TaskListCreationRequest request, String userEmail) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
         Long personaId = notificationService.resolvePersonaId(userEmail);
         TaskList taskList = new TaskList(request.getName(), familyId);
         taskList.setParticipants(resolveAndValidateParticipants(request.getParticipants(), userEmail, personaId));
-        taskListRepository.save(taskList);
+        TaskList savedTaskList = taskListRepository.save(taskList);
         notificationService.createNotification(familyId, "New task list created: " + request.getName());
+        return savedTaskList;
     }
 
     public TaskListsResponse getTasksForUser(String userEmail) {
@@ -51,7 +52,7 @@ public class TaskListService {
         notificationService.createNotification(familyId, "Task list deleted");
     }
 
-    public void modifyTaskListName(String listId, String newName, Set<Long> participants, String userEmail) {
+    public TaskList modifyTaskListName(String listId, String newName, Set<Long> participants, String userEmail) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
         Long personaId = notificationService.resolvePersonaId(userEmail);
         TaskList taskList = requireAccessibleTaskList(listId, familyId, personaId);
@@ -60,8 +61,9 @@ public class TaskListService {
         if (participants != null) {
             taskList.setParticipants(resolveAndValidateParticipants(participants, userEmail, personaId));
         }
-        taskListRepository.save(taskList);
+        TaskList savedTaskList = taskListRepository.save(taskList);
         notificationService.createNotification(familyId, "Task list renamed to: " + newName);
+        return savedTaskList;
     }
 
     private TaskList requireAccessibleTaskList(String listId, Long familyId, Long personaId) {
