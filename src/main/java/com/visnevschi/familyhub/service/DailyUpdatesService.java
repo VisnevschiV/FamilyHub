@@ -10,9 +10,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.visnevschi.familyhub.dbenitity.Persona;
 import com.visnevschi.familyhub.document.Task;
@@ -35,8 +33,8 @@ public class DailyUpdatesService {
         this.notificationService = notificationService;
     }
 
-    @Scheduled(cron = "0 0 0 * * *", zone = "Europe/Zurich")
-    @Transactional
+//    @Scheduled(cron = "0 0 0 * * *", zone = "Europe/Zurich")
+//    @Transactional
     public void deleteCompletedTasks() {
         log.info("[DailyUpdatesService] deleteCompletedTasks triggered at {}", java.time.LocalDateTime.now());
         familyRepository.findAll().forEach(family -> {
