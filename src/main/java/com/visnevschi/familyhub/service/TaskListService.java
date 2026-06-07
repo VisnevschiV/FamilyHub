@@ -30,6 +30,7 @@ public class TaskListService {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
         Long personaId = notificationService.resolvePersonaId(userEmail);
         TaskList taskList = new TaskList(request.getName(), familyId);
+        taskList.setCompleted(Boolean.TRUE.equals(request.getCompleted()));
         taskList.setParticipants(resolveAndValidateParticipants(request.getParticipants(), userEmail, personaId));
         TaskList savedTaskList = taskListRepository.save(taskList);
         notificationService.createNotification(familyId, "New task list created: " + request.getName());
@@ -52,7 +53,7 @@ public class TaskListService {
         notificationService.createNotification(familyId, "Task list deleted");
     }
 
-    public TaskList modifyTaskListName(String listId, String newName, Set<Long> participants, String userEmail) {
+    public TaskList modifyTaskListName(String listId, String newName, Set<Long> participants, Boolean completed, String userEmail) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
         Long personaId = notificationService.resolvePersonaId(userEmail);
         TaskList taskList = requireAccessibleTaskList(listId, familyId, personaId);
@@ -61,8 +62,21 @@ public class TaskListService {
         if (participants != null) {
             taskList.setParticipants(resolveAndValidateParticipants(participants, userEmail, personaId));
         }
+        if (completed != null) {
+            taskList.setCompleted(completed);
+        }
         TaskList savedTaskList = taskListRepository.save(taskList);
         notificationService.createNotification(familyId, "Task list renamed to: " + newName);
+        return savedTaskList;
+    }
+
+    public TaskList completeTaskList(String listId, String userEmail) {
+        Long familyId = familyService.getFamilyIdForUser(userEmail);
+        Long personaId = notificationService.resolvePersonaId(userEmail);
+        TaskList taskList = requireAccessibleTaskList(listId, familyId, personaId);
+        taskList.setCompleted(true);
+        TaskList savedTaskList = taskListRepository.save(taskList);
+        notificationService.createNotification(familyId, "Task list marked as completed: " + taskList.getName());
         return savedTaskList;
     }
 

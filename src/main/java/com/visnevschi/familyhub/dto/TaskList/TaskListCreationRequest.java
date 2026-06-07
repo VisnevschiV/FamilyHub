@@ -11,6 +11,7 @@ public class TaskListCreationRequest {
     String name;
 
     Set<Long> participants;
+    Boolean completed;
 
     public String getName() {
         return name;
@@ -18,5 +19,9 @@ public class TaskListCreationRequest {
 
     public Set<Long> getParticipants() {
         return participants;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
     }
 }

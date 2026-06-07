@@ -34,6 +34,9 @@ public class TaskList {
     @Field("participants")
     private HashSet<Long> participants = new HashSet<>();
 
+    @Field("completed")
+    private boolean completed = false;
+
     public TaskList(){}
     
     public TaskList(String name , Long familyId , Long... participants) {
@@ -76,6 +79,14 @@ public class TaskList {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 
     public List<Task> getTasks() {

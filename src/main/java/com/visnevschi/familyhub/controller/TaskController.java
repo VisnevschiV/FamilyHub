@@ -79,6 +79,11 @@ public class TaskController {
     
     @PatchMapping("/lists")
     public void updateList(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody TaskListModifyRequest request) {
-        taskListService.modifyTaskListName(request.getId(), request.getNewName(), request.getParticipants(), jwt.getSubject());
+        taskListService.modifyTaskListName(request.getId(), request.getNewName(), request.getParticipants(), request.getCompleted(), jwt.getSubject());
+    }
+
+    @PatchMapping("/lists/{id}/complete")
+    public void completeList(@AuthenticationPrincipal Jwt jwt, @PathVariable String id) {
+        taskListService.completeTaskList(id, jwt.getSubject());
     }
 }
