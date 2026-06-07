@@ -25,15 +25,18 @@ public class NotificationService {
     private final PersonaRepository personaRepository;
     private final NotificationEmitterRegistry emitterRegistry;
     private final EmailService emailService;
+    private final WebPushService webPushService;
 
     public NotificationService(NotificationRepository notificationRepository,
                                PersonaRepository personaRepository,
                                NotificationEmitterRegistry emitterRegistry,
-                               EmailService emailService) {
+                               EmailService emailService,
+                               WebPushService webPushService) {
         this.notificationRepository = notificationRepository;
         this.personaRepository = personaRepository;
         this.emitterRegistry = emitterRegistry;
         this.emailService = emailService;
+        this.webPushService = webPushService;
     }
 
     @Async("notificationExecutor")
@@ -48,6 +51,7 @@ public class NotificationService {
                     notification.getCreatedAt(),
                     notification.isRead());
             emitterRegistry.broadcast(personaId, response);
+            webPushService.sendToPersona(personaId, "FamilyHub", notification.getMessage(), "/");
 
         } catch (Exception e) {
             log.error("Failed to save notification for personaId={}: {}", personaId, e.getMessage());
