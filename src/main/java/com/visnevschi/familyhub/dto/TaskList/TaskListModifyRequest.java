@@ -15,6 +15,7 @@ public class TaskListModifyRequest {
     String newName;
 
     Set<Long> participants;
+    Boolean completed;
 
     public String getId() {
         return id;
@@ -26,5 +27,9 @@ public class TaskListModifyRequest {
 
     public Set<Long> getParticipants() {
         return participants;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
     }
 }

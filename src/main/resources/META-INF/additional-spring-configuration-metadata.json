@@ -26,6 +26,11 @@
             "description": "Cookie name used for refresh token."
         },
         {
+            "name": "app.jwt.cookie-refresh-path",
+            "type": "java.lang.String",
+            "description": "Path attribute used for refresh token cookie."
+        },
+        {
             "name": "app.jwt.cookie-secure",
             "type": "java.lang.Boolean",
             "description": "Whether JWT cookies are marked as Secure."

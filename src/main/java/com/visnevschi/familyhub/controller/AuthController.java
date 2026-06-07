@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.visnevschi.familyhub.dto.UserAccount.AuthTokens;
+import com.visnevschi.familyhub.dto.UserAccount.ConfirmEmailRequest;
 import com.visnevschi.familyhub.dto.UserAccount.LoginResponse;
 import com.visnevschi.familyhub.dto.UserAccount.RefreshRequest;
 import com.visnevschi.familyhub.dto.UserAccount.RegisterRequest;
 import com.visnevschi.familyhub.dto.UserAccount.RegisterResponse;
 import com.visnevschi.familyhub.dto.UserAccount.UserAccountDto;
-import com.visnevschi.familyhub.dto.UserAccount.ConfirmEmailRequest;
 import com.visnevschi.familyhub.service.AuthService;
 import com.visnevschi.familyhub.service.PendingUserService;
 
@@ -27,7 +27,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 
 @RestController
 @RequestMapping("/auth")
@@ -37,6 +36,7 @@ public class AuthController {
     private final PendingUserService pendingUserService;
     private final String accessCookieName;
     private final String refreshCookieName;
+    private final String refreshCookiePath;
     private final boolean cookieSecure;
     private final String cookieSameSite;
 
@@ -44,12 +44,14 @@ public class AuthController {
                           PendingUserService pendingUserService,
                           @Value("${app.jwt.cookie-access-name:access_token}") @NonNull String accessCookieName,
                           @Value("${app.jwt.cookie-refresh-name:refresh_token}") @NonNull String refreshCookieName,
+                          @Value("${app.jwt.cookie-refresh-path:/}") @NonNull String refreshCookiePath,
                           @Value("${app.jwt.cookie-secure:false}") boolean cookieSecure,
                           @Value("${app.jwt.cookie-same-site:Lax}") @NonNull String cookieSameSite) {
         this.authService = authService;
         this.pendingUserService = pendingUserService;
         this.accessCookieName = Objects.requireNonNull(accessCookieName);
         this.refreshCookieName = Objects.requireNonNull(refreshCookieName);
+        this.refreshCookiePath = normalizeCookiePath(refreshCookiePath);
         this.cookieSecure = cookieSecure;
         this.cookieSameSite = Objects.requireNonNull(cookieSameSite);
     }
@@ -108,7 +110,7 @@ public class AuthController {
                 Objects.requireNonNull(tokens.refreshToken()))
                 .httpOnly(true)
                 .secure(cookieSecure)
-                .path("/auth/refresh")
+            .path(refreshCookiePath)
                 .maxAge(tokens.refreshTtlSeconds())
                 .sameSite(cookieSameSite)
                 .build();
@@ -138,5 +140,13 @@ public class AuthController {
         }
 
         return null;
+    }
+
+    private String normalizeCookiePath(String path) {
+        String value = Objects.requireNonNull(path).trim();
+        if (value.isEmpty()) {
+            return "/";
+        }
+        return value.startsWith("/") ? value : "/" + value;
     }
 }
