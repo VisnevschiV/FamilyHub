@@ -83,6 +83,6 @@ public class FamilyController {
     }
 
     private FamilyMemberResponse toMemberResponse(Persona persona) {
-        return new FamilyMemberResponse(persona.getId(), persona.getName(), persona.getAvatarUrl());
+        return new FamilyMemberResponse(persona.getId(), persona.getName(), persona.getGender());
     }
 }
