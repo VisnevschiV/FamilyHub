@@ -1,6 +1,7 @@
 package com.visnevschi.familyhub.document;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashSet;
 
 import org.springframework.data.annotation.Id;
@@ -32,6 +33,12 @@ public class CalendarEvent {
     @NonNull
     @Field("time")
     private Instant time;
+
+
+    @Field("end_time")
+    private Instant endTime;
+
+    private boolean isAllDayEvent;
     
     @NotBlank
     @Field("title")
@@ -46,15 +53,23 @@ public class CalendarEvent {
     protected CalendarEvent() {
     }
 
-    public CalendarEvent(String title, String description, Instant time, Long familyId , Long... participants) {
+    public CalendarEvent(String title, String description, Instant time, Instant endTime, Long familyId , Long... participants) {
+        this(title, description, time, endTime, false, familyId, participants);
+    }
+
+    public CalendarEvent(String title, String description, Instant time, Instant endTime, boolean allDayEvent, Long familyId , Long... participants) {
         this.title = title;
         this.description = description;
         this.time = time;
+        this.endTime = endTime;
+        this.isAllDayEvent = allDayEvent;
         this.familyId = familyId;
         this.participants = new HashSet<>();
-        for (Long participant : participants) {
-            this.participants.add(participant);
-        }
+        Collections.addAll(this.participants, participants);
+    }
+
+    public CalendarEvent(String title, String description, Instant time, Long familyId, Long... participants) {
+        this(title, description, time, null, false, familyId, participants);
     }
 
     public String getId() {
@@ -85,6 +100,14 @@ public class CalendarEvent {
         return time;
     }
 
+    public Instant getEndTime() {
+        return endTime;
+    }
+
+    public boolean isAllDayEvent() {
+        return isAllDayEvent;
+    }
+
     public Long getFamilyId() {
         return familyId;
     }
@@ -99,5 +122,13 @@ public class CalendarEvent {
 
     public void setTime(Instant time) {
         this.time = time;
+    }
+
+    public void setEndTime(Instant endTime) {
+        this.endTime = endTime;
+    }
+
+    public void setAllDayEvent(boolean allDayEvent) {
+        isAllDayEvent = allDayEvent;
     }
 }

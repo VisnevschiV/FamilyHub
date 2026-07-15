@@ -19,7 +19,11 @@ public class CalendarEventCreationRequest {
     @NotNull
     private Instant time;
 
-    private Set<Long> participants = new HashSet<>();
+    private Instant endTime;
+
+    private boolean allDayEvent;
+
+    private final Set<Long> participants = new HashSet<>();
 
     public String getTitle() {
         return title;
@@ -31,6 +35,14 @@ public class CalendarEventCreationRequest {
 
     public Instant getTime() {
         return time;
+    }
+
+    public Instant getEndTime() {
+        return endTime;
+    }
+
+    public boolean isAllDayEvent() {
+        return allDayEvent;
     }
 
     public Set<Long> getParticipants() {

@@ -1,5 +1,6 @@
 package com.visnevschi.familyhub.service;
 
+import java.time.Instant;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
@@ -22,10 +23,12 @@ public class CalendarService {
         this.personaService = personaService;
     }
 
-    public CalendarEvent createEvent(String userEmail, String title, String description, java.time.Instant time, java.util.Set<Long> participants) {
+    public CalendarEvent createEvent(String userEmail, String title, String description, Instant time, Instant endTime, boolean allDayEvent, java.util.Set<Long> participants) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
 
-        CalendarEvent event = new CalendarEvent(title, description, time, familyId);
+        validateEventTiming(time, endTime, allDayEvent);
+
+        CalendarEvent event = new CalendarEvent(title, description, time, allDayEvent ? null : endTime, allDayEvent, familyId);
         if (participants != null && !participants.isEmpty()) {
             event.setParticipants(new java.util.HashSet<>(participants));
         }
@@ -53,7 +56,7 @@ public class CalendarService {
         return calendarEventRepository.findByFamilyId(familyId);
     }
 
-    public CalendarEvent updateEvent(String userEmail, String eventId, String title, String description, java.time.Instant time, java.util.Set<Long> participants) {
+    public CalendarEvent updateEvent(String userEmail, String eventId, String title, String description, Instant time, Instant endTime, boolean allDayEvent, java.util.Set<Long> participants) {
         Long familyId = familyService.getFamilyIdForUser(userEmail);
 
         CalendarEvent event = calendarEventRepository.findById(Objects.requireNonNull(eventId))
@@ -63,10 +66,28 @@ public class CalendarService {
             throw new IllegalStateException("User does not have permission to update this event");
         }
 
+        validateEventTiming(time, endTime, allDayEvent);
+
         event.setTitle(title);
         event.setDescription(description);
         event.setTime(time);
+        event.setEndTime(allDayEvent ? null : endTime);
+        event.setAllDayEvent(allDayEvent);
         event.setParticipants(participants != null ? new java.util.HashSet<>(participants) : new java.util.HashSet<>());
         return calendarEventRepository.save(event);
+    }
+
+    private void validateEventTiming(Instant time, Instant endTime, boolean allDayEvent) {
+        if (time == null) {
+            throw new IllegalArgumentException("Event start time is required");
+        }
+
+        if (allDayEvent) {
+            return;
+        }
+
+        if (endTime != null && endTime.isBefore(time)) {
+            throw new IllegalArgumentException("Event end time must be after start time");
+        }
     }
 }
