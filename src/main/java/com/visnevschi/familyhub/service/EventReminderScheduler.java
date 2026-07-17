@@ -60,6 +60,11 @@ public class EventReminderScheduler {
         // Process each event
         for (CalendarEvent event : upcomingEvents) {
             log.debug("Processing event: id={}, title={}, time={}", event.getId(), event.getTitle(), event.getTime());
+
+            if (event.isAllDayEvent()) {
+                log.debug("Event {} is all-day, skipping time-based reminder", event.getId());
+                continue;
+            }
             
             // Notify each participant individually
             if (event.getParticipants() == null || event.getParticipants().isEmpty()) {

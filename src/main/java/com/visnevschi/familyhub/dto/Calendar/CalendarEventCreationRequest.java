@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -19,7 +20,14 @@ public class CalendarEventCreationRequest {
     @NotNull
     private Instant time;
 
-    private Set<Long> participants = new HashSet<>();
+    private Instant endTime;
+
+    private boolean allDayEvent;
+
+    @Valid
+    private RecurrenceRuleRequest recurrence;
+
+    private final Set<Long> participants = new HashSet<>();
 
     public String getTitle() {
         return title;
@@ -31,6 +39,18 @@ public class CalendarEventCreationRequest {
 
     public Instant getTime() {
         return time;
+    }
+
+    public Instant getEndTime() {
+        return endTime;
+    }
+
+    public boolean isAllDayEvent() {
+        return allDayEvent;
+    }
+
+    public RecurrenceRuleRequest getRecurrence() {
+        return recurrence;
     }
 
     public Set<Long> getParticipants() {
