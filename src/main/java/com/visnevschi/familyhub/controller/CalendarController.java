@@ -1,7 +1,9 @@
 package com.visnevschi.familyhub.controller;
 
+import java.time.Instant;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -12,11 +14,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.visnevschi.familyhub.document.CalendarEvent;
 import com.visnevschi.familyhub.dto.Calendar.CalendarEventCreationRequest;
+import com.visnevschi.familyhub.dto.Calendar.CalendarEventOccurrenceResponse;
 import com.visnevschi.familyhub.dto.Calendar.CalendarEventResponse;
 import com.visnevschi.familyhub.service.CalendarService;
 
@@ -35,7 +39,7 @@ public class CalendarController {
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     public CalendarEventResponse createEvent(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CalendarEventCreationRequest request) {
-        CalendarEvent createdEvent = calendarService.createEvent(jwt.getSubject(), request.getTitle(), request.getDescription(), request.getTime(), request.getEndTime(), request.isAllDayEvent(), request.getParticipants());
+        CalendarEvent createdEvent = calendarService.createEvent(jwt.getSubject(), request.getTitle(), request.getDescription(), request.getTime(), request.getEndTime(), request.isAllDayEvent(), request.getRecurrence(), request.getParticipants());
         return CalendarEventResponse.fromDocument(createdEvent);
     }
 
@@ -47,7 +51,7 @@ public class CalendarController {
 
     @PatchMapping("/{eventId}")
     public CalendarEventResponse updateEvent(@AuthenticationPrincipal Jwt jwt, @PathVariable String eventId, @Valid @RequestBody CalendarEventCreationRequest request) {
-        CalendarEvent updatedEvent = calendarService.updateEvent(jwt.getSubject(), eventId, request.getTitle(), request.getDescription(), request.getTime(), request.getEndTime(), request.isAllDayEvent(), request.getParticipants());
+        CalendarEvent updatedEvent = calendarService.updateEvent(jwt.getSubject(), eventId, request.getTitle(), request.getDescription(), request.getTime(), request.getEndTime(), request.isAllDayEvent(), request.getRecurrence(), request.getParticipants());
         return CalendarEventResponse.fromDocument(updatedEvent);
     }
 
@@ -56,5 +60,13 @@ public class CalendarController {
         return calendarService.getEventsForFamily(jwt.getSubject()).stream()
                 .map(CalendarEventResponse::fromDocument)
                 .toList();
+    }
+
+    @GetMapping("/occurrences")
+    public List<CalendarEventOccurrenceResponse> getEventOccurrences(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant end) {
+        return calendarService.getEventOccurrencesForFamily(jwt.getSubject(), start, end);
     }
 }

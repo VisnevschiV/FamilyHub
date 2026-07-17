@@ -39,6 +39,9 @@ public class CalendarEvent {
     private Instant endTime;
 
     private boolean isAllDayEvent;
+
+    @Field("recurrence")
+    private EventRecurrence recurrence;
     
     @NotBlank
     @Field("title")
@@ -108,6 +111,10 @@ public class CalendarEvent {
         return isAllDayEvent;
     }
 
+    public EventRecurrence getRecurrence() {
+        return recurrence;
+    }
+
     public Long getFamilyId() {
         return familyId;
     }
@@ -130,5 +137,9 @@ public class CalendarEvent {
 
     public void setAllDayEvent(boolean allDayEvent) {
         isAllDayEvent = allDayEvent;
+    }
+
+    public void setRecurrence(EventRecurrence recurrence) {
+        this.recurrence = recurrence;
     }
 }

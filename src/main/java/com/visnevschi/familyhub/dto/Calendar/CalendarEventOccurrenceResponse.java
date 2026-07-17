@@ -5,27 +5,25 @@ import java.util.Set;
 
 import com.visnevschi.familyhub.document.CalendarEvent;
 
-public record CalendarEventResponse(
-        String id,
+public record CalendarEventOccurrenceResponse(
+        String eventId,
         Long familyId,
         String title,
         String description,
-        Instant time,
-        Instant endTime,
+        Instant occurrenceStart,
+        Instant occurrenceEnd,
         boolean allDayEvent,
-        RecurrenceRuleResponse recurrence,
         Set<Long> participants
 ) {
-    public static CalendarEventResponse fromDocument(CalendarEvent event) {
-        return new CalendarEventResponse(
+    public static CalendarEventOccurrenceResponse fromEventAndOccurrence(CalendarEvent event, Instant occurrenceStart, Instant occurrenceEnd) {
+        return new CalendarEventOccurrenceResponse(
                 event.getId(),
                 event.getFamilyId(),
                 event.getTitle(),
                 event.getDescription(),
-                event.getTime(),
-                event.getEndTime(),
+                occurrenceStart,
+                occurrenceEnd,
                 event.isAllDayEvent(),
-                RecurrenceRuleResponse.fromDocument(event.getRecurrence()),
                 event.getParticipants() == null ? Set.of() : Set.copyOf(event.getParticipants())
         );
     }
