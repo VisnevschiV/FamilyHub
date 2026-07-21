@@ -22,12 +22,10 @@ import com.visnevschi.familyhub.dto.PeriodProfile.PeriodDateRequest;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodMonthResponse;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodProfileResponse;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodRecordResponse;
-import com.visnevschi.familyhub.dto.PeriodProfile.RecordPeriodEventRequest;
 import com.visnevschi.familyhub.dto.PeriodProfile.UpdatePeriodProfileRequest;
 import com.visnevschi.familyhub.exception.NotFoundException;
 import com.visnevschi.familyhub.repository.PeriodProfileRepository;
 import com.visnevschi.familyhub.utils.Gender;
-import com.visnevschi.familyhub.utils.PeriodEventType;
 
 @Service
 public class PeriodProfileService {
@@ -125,16 +123,6 @@ public class PeriodProfileService {
         return toResponse(periodProfileRepository.save(profile));
     }
 
-    public PeriodProfileResponse recordEventForEmail(String email, RecordPeriodEventRequest request) {
-        if (request.eventType() == PeriodEventType.STARTED) {
-            return startPeriodForEmail(email, new PeriodDateRequest(request.date()));
-        }
-        if (request.eventType() == PeriodEventType.ENDED) {
-            return stopPeriodForEmail(email, new PeriodDateRequest(request.date()));
-        }
-        throw new IllegalArgumentException("Unsupported period event type");
-    }
-
     @SuppressWarnings("null")
     public PeriodProfileResponse startPeriodForEmail(String email, PeriodDateRequest request) {
         Persona persona = personaService.getForEmail(email);
@@ -150,24 +138,6 @@ public class PeriodProfileService {
 
         normalizeDefaults(profile);
         recordPeriodStart(profile, request.date());
-        learnCycleLengthFromEvents(profile);
-        syncLatestPeriodDates(profile);
-        recalculatePrediction(profile);
-
-        return toResponse(periodProfileRepository.save(profile));
-    }
-
-    @SuppressWarnings("null")
-    public PeriodProfileResponse stopPeriodForEmail(String email, PeriodDateRequest request) {
-        Persona persona = personaService.getForEmail(email);
-        validatePersonaEligibility(persona);
-        Long personaId = Objects.requireNonNull(persona.getId(), "Persona id is required");
-
-        PeriodProfile profile = periodProfileRepository.findById(personaId)
-                .orElseThrow(() -> new NotFoundException("Period profile not found"));
-
-        normalizeDefaults(profile);
-        recordPeriodEnd(profile, request.date());
         learnCycleLengthFromEvents(profile);
         syncLatestPeriodDates(profile);
         recalculatePrediction(profile);
@@ -265,7 +235,7 @@ public class PeriodProfileService {
     }
 
     private void validatePersonaEligibility(Persona persona) {
-        if (persona.getGender() != Gender.FEMALE) {
+        if (persona.getGender() == Gender.MALE) {
             throw new IllegalArgumentException("Period tracking can be enabled only for FEMALE personas");
         }
     }
@@ -324,19 +294,6 @@ public class PeriodProfileService {
         }
 
         profile.getPeriodRecords().add(new PeriodRecord(UUID.randomUUID().toString(), startDate));
-    }
-
-    private void recordPeriodEnd(PeriodProfile profile, LocalDate endDate) {
-        PeriodRecord activePeriod = profile.getPeriodRecords().stream()
-                .filter(r -> r.getEndDate() == null)
-                .max(Comparator.comparing(PeriodRecord::getStartDate))
-                .orElseThrow(() -> new IllegalStateException("There is no active period to end"));
-
-        if (endDate.isBefore(activePeriod.getStartDate())) {
-            throw new IllegalArgumentException("Period end date cannot be before the period start date");
-        }
-
-        activePeriod.setEndDate(endDate);
     }
 
     private void learnCycleLengthFromEvents(PeriodProfile profile) {
