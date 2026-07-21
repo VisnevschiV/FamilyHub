@@ -21,7 +21,6 @@ import com.visnevschi.familyhub.dto.PeriodProfile.FamilyMemberMonthResponse;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodDateRequest;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodMonthResponse;
 import com.visnevschi.familyhub.dto.PeriodProfile.PeriodProfileResponse;
-import com.visnevschi.familyhub.dto.PeriodProfile.RecordPeriodEventRequest;
 import com.visnevschi.familyhub.dto.PeriodProfile.UpdatePeriodProfileRequest;
 import com.visnevschi.familyhub.service.PeriodProfileService;
 
@@ -67,19 +66,6 @@ public class PeriodProfileController {
     public PeriodProfileResponse start(@AuthenticationPrincipal Jwt jwt,
                                        @Valid @RequestBody PeriodDateRequest request) {
         return periodProfileService.startPeriodForEmail(jwt.getSubject(), request);
-    }
-
-    @PostMapping("/stop")
-    public PeriodProfileResponse stop(@AuthenticationPrincipal Jwt jwt,
-                                      @Valid @RequestBody PeriodDateRequest request) {
-        return periodProfileService.stopPeriodForEmail(jwt.getSubject(), request);
-    }
-
-    @PostMapping("/events")
-    @ResponseStatus(HttpStatus.CREATED)
-    public PeriodProfileResponse recordEvent(@AuthenticationPrincipal Jwt jwt,
-                                             @Valid @RequestBody RecordPeriodEventRequest request) {
-        return periodProfileService.recordEventForEmail(jwt.getSubject(), request);
     }
 
     @GetMapping("/records/month")
