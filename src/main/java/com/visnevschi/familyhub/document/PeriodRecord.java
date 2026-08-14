@@ -15,12 +15,17 @@ public class PeriodRecord {
     @Field("end_date")
     private LocalDate endDate;
 
+    @Field("period_length_days")
+    private Integer periodLengthDays;
+
     protected PeriodRecord() {
     }
 
-    public PeriodRecord(String id, LocalDate startDate) {
+    public PeriodRecord(String id, LocalDate startDate, Integer periodLengthDays) {
         this.id = id;
-        this.startDate = startDate;
+        this.periodLengthDays = periodLengthDays != null ? periodLengthDays : 5;
+        this.startDate = java.util.Objects.requireNonNull(startDate, "startDate is required");
+        this.endDate = calculateEndDate(this.startDate, this.periodLengthDays);
     }
 
     public String getId() {
@@ -32,14 +37,27 @@ public class PeriodRecord {
     }
 
     public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
+        this.startDate = java.util.Objects.requireNonNull(startDate, "startDate is required");
+        this.endDate = calculateEndDate(this.startDate, this.periodLengthDays);
     }
 
     public LocalDate getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
+    public Integer getPeriodLengthDays() {
+        return periodLengthDays;
+    }
+
+    public void setPeriodLengthDays(Integer periodLengthDays) {
+        this.periodLengthDays = periodLengthDays != null ? periodLengthDays : 5;
+        if (this.startDate != null) {
+            this.endDate = calculateEndDate(this.startDate, this.periodLengthDays);
+        }
+    }
+
+    private static LocalDate calculateEndDate(LocalDate startDate, Integer periodLengthDays) {
+        int length = periodLengthDays != null ? periodLengthDays : 5;
+        return startDate.plusDays(Math.max(1, length) - 1L);
     }
 }

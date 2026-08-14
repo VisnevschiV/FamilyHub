@@ -287,13 +287,12 @@ public class PeriodProfileService {
             throw new IllegalStateException("A period with this start date already exists");
         }
 
-        boolean hasOpenPeriod = profile.getPeriodRecords().stream()
-                .anyMatch(r -> r.getEndDate() == null);
-        if (hasOpenPeriod) {
-            throw new IllegalStateException("There is already an active period without an end date");
-        }
-
-        profile.getPeriodRecords().add(new PeriodRecord(UUID.randomUUID().toString(), startDate));
+        PeriodRecord record = new PeriodRecord(
+                UUID.randomUUID().toString(),
+                startDate,
+                profile.getPeriodLengthDays() != null ? profile.getPeriodLengthDays() : DEFAULT_PERIOD_LENGTH_DAYS
+        );
+        profile.getPeriodRecords().add(record);
     }
 
     private void learnCycleLengthFromEvents(PeriodProfile profile) {
