@@ -156,8 +156,10 @@ public class CalendarService {
             throw new IllegalArgumentException("Monthly recurrence requires a month day");
         }
 
-        if (recurrence.getFrequency() != RecurrenceFrequency.MONTHLY && recurrence.getByMonthDay() != null) {
-            throw new IllegalArgumentException("Month day can only be specified for monthly recurrence");
+        if (recurrence.getFrequency() != RecurrenceFrequency.MONTHLY
+                && recurrence.getFrequency() != RecurrenceFrequency.YEARLY
+                && recurrence.getByMonthDay() != null) {
+            throw new IllegalArgumentException("Month day can only be specified for monthly or yearly recurrence");
         }
     }
 
