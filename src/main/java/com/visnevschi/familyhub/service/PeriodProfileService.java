@@ -230,6 +230,27 @@ public class PeriodProfileService {
         periodProfileRepository.deleteById(personaId);
     }
 
+    public PeriodProfileResponse deleteRecordForEmail(String email, String recordId) {
+        Persona persona = personaService.getForEmail(email);
+        Long personaId = Objects.requireNonNull(persona.getId(), "Persona id is required");
+        PeriodProfile profile = periodProfileRepository.findById(personaId)
+                .orElseThrow(() -> new NotFoundException("Period profile not found"));
+
+        boolean removed = profile.getPeriodRecords().removeIf(record -> record.getId().equals(recordId));
+        if (!removed) {
+            throw new NotFoundException("Period record not found");
+        }
+
+        normalizeDefaults(profile);
+        learnCycleLengthFromEvents(profile);
+        profile.setLastPeriodStartDate(null);
+        profile.setLastPeriodEndDate(null);
+        syncLatestPeriodDates(profile);
+        recalculatePrediction(profile);
+
+        return toResponse(periodProfileRepository.save(profile));
+    }
+
     private Long familyId(Persona persona) {
         return persona.getFamily() != null ? persona.getFamily().getId() : null;
     }
