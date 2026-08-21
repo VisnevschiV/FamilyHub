@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -80,6 +81,12 @@ public class PeriodProfileController {
                                                           @RequestParam int year,
                                                           @RequestParam int month) {
         return periodProfileService.getFamilyMonthForEmail(jwt.getSubject(), year, month);
+    }
+
+    @DeleteMapping("/records/{recordId}")
+    public PeriodProfileResponse deleteRecord(@AuthenticationPrincipal Jwt jwt,
+                                              @PathVariable String recordId) {
+        return periodProfileService.deleteRecordForEmail(jwt.getSubject(), recordId);
     }
 
     @DeleteMapping
