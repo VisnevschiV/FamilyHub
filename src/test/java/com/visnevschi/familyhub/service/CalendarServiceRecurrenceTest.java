@@ -1,22 +1,66 @@
 package com.visnevschi.familyhub.service;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.time.Instant;
+import java.time.DayOfWeek;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 
 import com.visnevschi.familyhub.dbenitity.Persona;
+import com.visnevschi.familyhub.document.CalendarEvent;
 import com.visnevschi.familyhub.dto.Calendar.RecurrenceFrequency;
 import com.visnevschi.familyhub.dto.Calendar.RecurrenceRuleRequest;
 import com.visnevschi.familyhub.repository.CalendarEventRepository;
 
 class CalendarServiceRecurrenceTest {
+
+    @ParameterizedTest
+    @EnumSource(DayOfWeek.class)
+    void infersWeeklyDayOnCreateAndUpdateAndPreservesExplicitDays(DayOfWeek day) throws Exception {
+        FamilyService familyService = mock(FamilyService.class);
+        CalendarEventRepository repository = mock(CalendarEventRepository.class);
+        PersonaService personaService = mock(PersonaService.class);
+        Persona persona = mock(Persona.class);
+        when(familyService.getFamilyIdForUser(Mockito.anyString())).thenReturn(1L);
+        when(repository.save(Mockito.any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(personaService.getForEmail(Mockito.anyString())).thenReturn(persona);
+        when(persona.getId()).thenReturn(1L);
+        CalendarService service = new CalendarService(familyService, repository,
+                mock(NotificationService.class), personaService);
+        RecurrenceRuleRequest recurrence = new RecurrenceRuleRequest();
+        setField(recurrence, "frequency", RecurrenceFrequency.WEEKLY);
+        Instant start = Instant.parse("2026-09-21T17:00:00Z").plus(day.getValue() - 1, ChronoUnit.DAYS);
+        CalendarEvent event = service.createEvent("test@example.com", "Dinner", "", start,
+                start.plusSeconds(3600), false, recurrence, Set.of());
+        assertEquals(Set.of(day), event.getRecurrence().getByWeekDays());
+        when(repository.findByFamilyIdOrderByTimeAsc(1L)).thenReturn(List.of(event));
+        assertEquals(List.of(start, start.plus(7, ChronoUnit.DAYS)),
+                service.getEventOccurrencesForFamily("test@example.com", start, start.plus(8, ChronoUnit.DAYS))
+                        .stream().map(occurrence -> occurrence.occurrenceStart()).toList());
+
+        when(repository.findById("event")).thenReturn(Optional.of(event));
+        Instant updatedStart = start.plus(1, ChronoUnit.DAYS);
+        service.updateEvent("test@example.com", "event", "Dinner", "", updatedStart,
+                updatedStart.plusSeconds(3600), false, recurrence, Set.of());
+        assertEquals(Set.of(day.plus(1)), event.getRecurrence().getByWeekDays());
+
+        recurrence.getByWeekDays().add(day);
+        service.updateEvent("test@example.com", "event", "Dinner", "", updatedStart,
+                updatedStart.plusSeconds(3600), false, recurrence, Set.of());
+        assertEquals(Set.of(day), event.getRecurrence().getByWeekDays());
+    }
 
     @Test
     void allowsYearlyRecurrenceWithMonthDayAndIntervalTwelve() throws Exception {

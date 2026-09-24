@@ -43,7 +43,7 @@ public class CalendarService {
         validateEventTiming(time, endTime, allDayEvent, recurrence);
 
         CalendarEvent event = new CalendarEvent(title, description, time, allDayEvent ? null : endTime, allDayEvent, familyId);
-        event.setRecurrence(toEventRecurrence(recurrence));
+        event.setRecurrence(toEventRecurrence(recurrence, time));
         if (participants != null && !participants.isEmpty()) {
             event.setParticipants(new java.util.HashSet<>(participants));
         }
@@ -108,7 +108,7 @@ public class CalendarService {
         event.setTime(time);
         event.setEndTime(allDayEvent ? null : endTime);
         event.setAllDayEvent(allDayEvent);
-        event.setRecurrence(toEventRecurrence(recurrence));
+        event.setRecurrence(toEventRecurrence(recurrence, time));
         event.setParticipants(participants != null ? new java.util.HashSet<>(participants) : new java.util.HashSet<>());
         return calendarEventRepository.save(event);
     }
@@ -144,10 +144,6 @@ public class CalendarService {
             throw new IllegalArgumentException("Recurrence can have either until or count, not both");
         }
 
-        if (recurrence.getFrequency() == RecurrenceFrequency.WEEKLY && recurrence.getByWeekDays().isEmpty()) {
-            throw new IllegalArgumentException("Weekly recurrence requires at least one weekday");
-        }
-
         if (recurrence.getFrequency() != RecurrenceFrequency.WEEKLY && !recurrence.getByWeekDays().isEmpty()) {
             throw new IllegalArgumentException("Weekdays can only be specified for weekly recurrence");
         }
@@ -163,19 +159,23 @@ public class CalendarService {
         }
     }
 
-    private EventRecurrence toEventRecurrence(RecurrenceRuleRequest recurrence) {
+    private EventRecurrence toEventRecurrence(RecurrenceRuleRequest recurrence, Instant time) {
         if (recurrence == null) {
             return null;
         }
 
         Integer requestedInterval = recurrence.getInterval();
         Integer interval = requestedInterval == null ? Integer.valueOf(1) : requestedInterval;
+        Set<DayOfWeek> weekDays = recurrence.getByWeekDays();
+        if (recurrence.getFrequency() == RecurrenceFrequency.WEEKLY && weekDays.isEmpty()) {
+            weekDays = Set.of(time.atZone(ZoneOffset.UTC).getDayOfWeek());
+        }
         return new EventRecurrence(
                 recurrence.getFrequency(),
                 interval,
                 recurrence.getUntil(),
                 recurrence.getCount(),
-                recurrence.getByWeekDays(),
+                weekDays,
                 recurrence.getByMonthDay()
         );
     }
