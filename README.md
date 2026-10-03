@@ -1,208 +1,189 @@
-# FamilyHub
+﻿<div align="center">
 
-**A secure Spring Boot backend for a family hub.**
+# 🏡 FamilyHub
 
-FamilyHub is a backend API that centralizes family life: shared tasks, budgets, calendar events, real-time notifications, and health tracking — all behind secure JWT authentication.
+### A little less chaos. A little more together.
 
-## Features
+A Java & Spring Boot backend for the everyday things families share:<br>
+plans, chores, budgets, and reminders.
 
-### Authentication & Accounts
-- Register, login, logout, and token refresh (JWT access token + refresh token)
-- Email confirmation flow for new accounts
-- HttpOnly cookie-based token transport
-- Secure password storage
+![Java 17](https://img.shields.io/badge/Java-17-f4b8a4?style=flat-square)
+![Spring Boot 3.4](https://img.shields.io/badge/Spring_Boot-3.4-b8d8ba?style=flat-square)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-b8cde8?style=flat-square)
+![MongoDB](https://img.shields.io/badge/MongoDB-cadbb7?style=flat-square)
+![REST API](https://img.shields.io/badge/REST_API-d8c4e8?style=flat-square)
 
-### Family Management
-- Create a family group and invite members via time-limited join codes
-- View all family members and their profiles
+[Features](#-what-familyhub-does) · [Architecture](#-under-the-hood) · [Run locally](#-run-locally) · [API guide](#-explore-the-api)
 
-### Persona Profiles
-- Create and update your personal profile (name, birthday, gender, avatar)
+</div>
 
-### Shared Task Lists
-- Create task lists and assign participants from the family
-- Add, update, complete, and delete tasks
-- Daily scheduled cleanup: completed tasks are removed, recurring tasks reset automatically
+---
 
-### Family Budget & Finance Tracker
-- Create family budgets with multi-currency support
-- Record income/expense transactions
-- Nested sub-budgets for granular tracking
+## 🌷 About the project
 
-### Shared Calendar
-- Create, update, and delete family calendar events
-- Participants receive notifications when events are created
-- Automatic email reminders 10 minutes before events
+> 🚧 **Work in progress:** FamilyHub is under active development, with major optimisation and design updates being developed to improve performance, maintainability, and the overall experience. Planned additions include Kafka, Redis, an improved notification system, multi-day events, and third-party login.
 
-### Real-time Notifications
-- Server-Sent Events (SSE) stream for live push notifications
-- Paginated notification history with read/unread tracking
-- Async processing — notifications never block the main request
+Family life comes with a lot of small things to remember. FamilyHub brings them into one shared space, with personal profiles and family groups connecting the experience.
 
-### Period Tracker
-- Private menstrual cycle profiles per persona
-- Log period start/end events
-- Prediction algorithm that learns from historical records
-- Month-view summaries; family members can optionally share visibility
+This repository contains the **backend API**. It combines relational account data with document-based family features, JWT authentication, recurring calendar events, and asynchronous notifications.
 
-### Observability
-- Correlation ID injected on every request for end-to-end tracing
-- Structured logging (WARN at root, INFO for app code)
-- Global exception handler with standardized `ApiError` responses and error reference IDs
-- OpenAPI / Swagger UI enabled
+## ✨ What FamilyHub does
 
-### Roadmap
-- **Secure in-app chat**
+| Feature | What it supports |
+| --- | --- |
+| 🔐 Accounts | Registration, email confirmation, login, and access/refresh tokens |
+| 🏡 Family groups | Create a family, join with a time-limited invite code, manage membership, and view members |
+| 🌼 Personal profiles | Names, birthdays, gender, and avatar URLs |
+| ✅ Shared tasks | Task lists with participants, task editing, and completion tracking |
+| 💸 Family budgets | Income and expense transactions, multiple currencies, and nested sub-budgets |
+| 🗓️ Shared calendar | All-day and timed events, participants, daily/weekly/monthly/yearly recurrence, and occurrence queries within a date range |
+| 🔔 Notifications | Live Server-Sent Events, paginated history, read tracking, browser Web Push, and scheduled event reminders |
+| 🌸 Cycle tracking | Period records, history-based predictions, monthly summaries, and configurable family visibility |
 
+## 🧩 Under the hood
 
-## Tech Stack
-- **Language**: Java 17
-- **Framework**: Spring Boot 3.4
-- **Security**: Spring Security (JWT resource server, HMAC SHA-256)
-- **Databases**: PostgreSQL (auth, personas, families) + MongoDB (tasks, budgets, calendar, notifications, period data)
-- **ORM**: Hibernate / Spring Data JPA + Spring Data MongoDB
-- **Real-time**: Server-Sent Events (SSE)
-- **Email**: Gmail SMTP (async)
-- **API Docs**: Swagger / OpenAPI 3
-- **Build**: Gradle
+```mermaid
+flowchart LR
+    Client[Web client / API consumer] --> API[Spring Boot REST API]
+    API --> Security[Spring Security + JWT]
+    Security --> Services[Domain services]
+    Services --> SQL[(PostgreSQL)]
+    Services --> Mongo[(MongoDB)]
+    Services --> Async[Async notifications]
+    Async --> SSE[Live SSE stream]
+    Async --> Push[Browser Web Push]
+    Services --> Mail[SMTP email]
+```
 
+| Layer | Technology / responsibility |
+| --- | --- |
+| Runtime | Java 17, Spring Boot 3.4.0, Gradle wrapper |
+| API | Spring MVC, Jakarta Validation, OpenAPI / Swagger UI |
+| Authentication | Spring Security, HS256 JWTs, BCrypt passwords, HttpOnly token cookies, bearer-header support |
+| Relational storage | PostgreSQL with Spring Data JPA for accounts, personas, families, invites, and push subscriptions |
+| Document storage | MongoDB with Spring Data MongoDB for tasks, budgets, calendar events, notifications, and cycle data |
+| Background work | Spring async executors and scheduled reminders |
+| Delivery | SSE, VAPID Web Push, and SMTP email |
+| Diagnostics | Request correlation IDs and centralized `ApiError` responses |
+| Tests | JUnit 5, Mockito, and an H2-backed application context test |
 
-## Getting Started
+### Engineering highlights
 
-### Prerequisites
-- [JDK 17](https://adoptium.net/)
-- [PostgreSQL](https://www.postgresql.org/)
-- [MongoDB](https://www.mongodb.com/try/download/community)
+- **Recurring events:** store a recurrence rule and expand occurrences for a requested time window, with interval, end date/count, weekday, and month-day options.
+- **Multiple persistence models:** keep account and membership relationships in PostgreSQL, with feature documents in MongoDB. Services coordinate access across both stores.
+- **Asynchronous delivery:** persist notifications and deliver live updates through SSE and Web Push using a notification executor.
+- **Browser authentication:** support HttpOnly JWT cookies and bearer headers, with CSRF protection on routes outside `/auth/**` and configurable CORS origins.
+- **Debuggable errors:** attach correlation IDs to request logs and return consistent API error bodies with reference IDs.
 
-### Environment Variables
-Set the following before running:
+Browse the [controllers](src/main/java/com/visnevschi/familyhub/controller), [services](src/main/java/com/visnevschi/familyhub/service), and [tests](src/test/java/com/visnevschi/familyhub) for the implementation.
 
-| Variable | Example |
-|----------|---------|
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/familyhub_db` |
-| `SPRING_DATASOURCE_USERNAME` | `familyhub_admin` |
-| `SPRING_DATASOURCE_PASSWORD` | `yourpassword` |
-| `SPRING_DATA_MONGODB_URI` | `mongodb://localhost:27017/familyhub` |
-| `JWT_SECRET` | `<base64-encoded-secret>` |
-| `SPRING_MAIL_USERNAME` | `your@gmail.com` |
-| `SPRING_MAIL_PASSWORD` | `<app-password>` |
+## 🌱 Run locally
 
-For cloud deployments, see the [Moving PostgreSQL to Azure](#moving-postgresql-to-azure) section below.
+### 1. Prepare your tools and databases
 
-### Run
+Install **JDK 17**, **PostgreSQL**, and **MongoDB**. The Gradle wrapper is included.
+
+Create a PostgreSQL database named `familyhub`, and start MongoDB locally. Hibernate creates or updates the SQL tables on startup; MongoDB automatic index creation is enabled.
+
+### 2. Configure the application
+
+The defaults live in [application.properties](src/main/resources/application.properties). Override them with environment variables:
+
+| Variable | Local example / purpose |
+| --- | --- |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/familyhub` |
+| `SPRING_DATASOURCE_USERNAME` | `postgres` |
+| `SPRING_DATASOURCE_PASSWORD` | Your local PostgreSQL password |
+| `SPRING_DATA_MONGODB_URI` | `mongodb://localhost:27017/FamilyHub` |
+| `APP_JWT_SECRET` | A random secret of at least 32 UTF-8 bytes; used directly, without Base64 decoding |
+| `APP_JWT_COOKIE_SECURE` | `false` for local HTTP; use `true` with HTTPS |
+| `SPRING_MAIL_USERNAME` | Gmail address for confirmation emails |
+| `SPRING_MAIL_PASSWORD` | Gmail app password |
+| `SPRING_MAIL_FROM` | Sender address |
+| `APP_CORS_ALLOWED_ORIGINS` | Your frontend origin; localhost ports 3000, 5173, and 4200 are already allowed |
+
+Email credentials are needed to exercise account registration and confirmation. Set `SPRING_MAIL_HOST` and `SPRING_MAIL_PORT` if using another SMTP provider.
+
+For browser push, also configure `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`. Without keys, Web Push is disabled; the API can still start. Browser delivery also requires a frontend service worker and subscription. Key-generation notes are in `application.properties`.
+
+Example environment setup in PowerShell:
+
+```powershell
+$env:SPRING_DATASOURCE_PASSWORD = 'your-local-db-password'
+$env:APP_JWT_SECRET = 'replace-with-your-own-random-secret-of-at-least-32-bytes'
+$env:APP_JWT_COOKIE_SECURE = 'false'
+$env:SPRING_MAIL_USERNAME = 'your-email@gmail.com'
+$env:SPRING_MAIL_PASSWORD = 'your-app-password'
+$env:SPRING_MAIL_FROM = 'your-email@gmail.com'
+```
+
+### 3. Start the backend
+
+macOS / Linux:
+
 ```bash
 ./gradlew bootRun
 ```
-On Windows:
-```bash
-gradlew.bat bootRun
+
+Windows PowerShell:
+
+```powershell
+.\gradlew.bat bootRun
 ```
 
-### API Docs
-Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+Open [Swagger UI](http://localhost:8080/swagger-ui/index.html) to explore request and response schemas. The OpenAPI document is available at [`/v3/api-docs`](http://localhost:8080/v3/api-docs).
 
-## Key Endpoints
+## 🗺️ Explore the API
 
-### Auth
-- `POST /auth/register`
-- `POST /auth/confirm-email`
-- `POST /auth/login`
-- `POST /auth/refresh`
-- `POST /auth/logout`
+A typical flow is: **register → confirm email → log in → create a persona → create or join a family → use shared features**.
 
-### Persona
-- `GET /personas/me`
-- `POST /personas/me`
-- `PATCH /personas/me`
-- `GET /personas/family-members`
+Representative routes below match the current controllers. Swagger contains the full API schema.
 
-### Family
-- `POST /family/create`
-- `POST /family/join`
-- `GET /family`
-- `POST /family/generate-code`
+| Area | Example routes |
+| --- | --- |
+| Authentication | `POST /auth/register`, `POST /auth/confirm`, `POST /auth/login`, `POST /auth/refresh` |
+| Persona | `GET /personas/me`, `POST /personas/me`, `PATCH /personas/me` |
+| Family | `POST /families`, `POST /families/join`, `POST /families/me/join-code`, `GET /families/me/members` |
+| Tasks | `GET /tasks/getLists`, `POST /tasks/createList`, `POST /tasks`, `PATCH /tasks`, `DELETE /tasks` |
+| Budgets | `GET /budgets`, `POST /budgets`, `POST /budgets/{budgetId}/transaction` |
+| Calendar | `GET /calendar`, `POST /calendar`, `PATCH /calendar/{eventId}`, `GET /calendar/occurrences?start=…&end=…` |
+| Notifications | `GET /notifications`, `PATCH /notifications/{notificationId}/read`, `GET /notifications/stream` |
+| Browser push | `POST /push/subscriptions`, `DELETE /push/subscriptions`, `GET /push/subscriptions/me` |
+| Cycle tracking | `POST /personas/me/period-profile`, `POST /personas/me/period-profile/start`, `GET /personas/me/period-profile/records/month` |
 
-### Tasks
-- `GET /task-lists`
-- `POST /task-lists`
-- `POST /task-lists/{id}/tasks`
-- `PATCH /task-lists/{id}/tasks/{taskId}`
-- `DELETE /task-lists/{id}/tasks/{taskId}`
+Access tokens expire after **1 hour**, refresh tokens after **30 days**, and family join codes after **15 minutes** by default. For protected write requests, send the CSRF token as well as your authentication token.
 
-### Budget
-- `POST /budgets`
-- `GET /budgets`
-- `POST /budgets/{id}/transactions`
+## 🧪 Tests
 
-### Calendar
-- `POST /calendar`
-- `PATCH /calendar/{id}`
-- `DELETE /calendar/{id}`
+```bash
+./gradlew test
+```
 
-### Notifications
-- `GET /notifications`
-- `PATCH /notifications/{id}/read`
-- `GET /notifications/stream` (SSE)
+On Windows, use `.\gradlew.bat test`. Gradle writes the HTML report to `build/reports/tests/test/index.html`.
 
-### Period Tracker
-- `POST /period-profile`
-- `GET /period-profile`
-- `POST /period-profile/record`
-- `GET /period-profile/month`
+The current suite includes calendar recurrence regression tests, period-profile service tests, and an application context smoke test. These are focused checks; they do not cover every endpoint or live notification integration.
 
-## Notes
-- Tokens are sent via cookies by default; adjust cookie flags in `application.properties` for production.
-- MongoDB auto-index creation is enabled (`spring.data.mongodb.auto-index-creation=true`); disable in production if managing indexes manually.
-- Access token TTL: 1 hour. Refresh token TTL: 30 days.
-- Family join codes expire after 15 minutes.
-- Team/dev process is documented in [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md).
+## 🚧 Next steps
 
-## Moving PostgreSQL to Azure
+The following additions are planned as part of the ongoing optimisation and design work:
 
-If you are fine starting fresh (no local data migration), use this clean setup path:
+- Kafka integration for event-driven processing
+- Redis integration for caching
+- An improved notification system
+- Multi-day calendar events
+- Third-party login with OAuth 2.0 / OpenID Connect
+- Secure in-app chat
+- Broader API and integration test coverage
+- Versioned database migrations in place of Hibernate schema updates
 
-1. Create an **Azure Database for PostgreSQL Flexible Server** in the same region as your app.
-2. Create database `familyhub_db` and an app user.
-3. Allow network access:
-	- either add your client/app IP in server firewall rules,
-	- or use private networking if your app is deployed in Azure.
-4. Set app environment variables:
-	- `SPRING_DATASOURCE_URL=jdbc:postgresql://<server>.postgres.database.azure.com:5432/familyhub_db?sslmode=require`
-	- `SPRING_DATASOURCE_USERNAME=<user>`
-	- `SPRING_DATASOURCE_PASSWORD=<password>`
-5. Start/restart the app. With `spring.jpa.hibernate.ddl-auto=update`, Hibernate creates missing tables automatically.
-6. Verify `http://localhost:8080/swagger-ui/index.html` and run register/login once to validate writes.
+Before deploying, provide an environment-specific JWT secret, enable secure cookies over HTTPS, configure your frontend origins, and choose an explicit schema/index migration strategy.
 
-If you do want existing local data later, follow the import/export path below.
+Development conventions are in [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md).
 
-1. Create an **Azure Database for PostgreSQL Flexible Server** in the same region as your app.
-2. Create database `familyhub_db` and an admin/user with least required privileges.
-3. Allow network access:
-	- either add your client/app IP in server firewall rules,
-	- or use private networking if your app is deployed in Azure.
-4. Export local data:
-	- `pg_dump -h localhost -U postgres -d familyhub_db -Fc -f familyhub_db.dump`
-5. Import to Azure:
-	- `pg_restore -h <server>.postgres.database.azure.com -U <user> -d familyhub_db --no-owner --no-privileges familyhub_db.dump`
-6. Set app environment variables:
-	- `SPRING_DATASOURCE_URL=jdbc:postgresql://<server>.postgres.database.azure.com:5432/familyhub_db?sslmode=require`
-	- `SPRING_DATASOURCE_USERNAME=<user>`
-	- `SPRING_DATASOURCE_PASSWORD=<password>`
-7. Restart the application and verify the health/auth endpoints.
+---
 
-## Using Supabase PostgreSQL
+<div align="center">
 
-If you switched to Supabase, you can keep the same Spring setup and just provide Supabase DB credentials via env vars.
+🌷 Built around the small things that make a home run smoothly.
 
-1. In Supabase, open **Project Settings → Database**.
-2. Copy the connection details for direct PostgreSQL access.
-3. Set environment variables before starting the app:
-	- `SPRING_DATASOURCE_URL=jdbc:postgresql://db.<project-ref>.supabase.co:5432/postgres?sslmode=require`
-	- `SPRING_DATASOURCE_USERNAME=<supabase_db_user>`
-	- `SPRING_DATASOURCE_PASSWORD=<supabase_db_password>`
-4. Start the app with `./gradlew bootRun` (or `gradlew.bat bootRun` on Windows).
-5. On first run, Hibernate creates missing tables automatically (`spring.jpa.hibernate.ddl-auto=update`).
-
-Notes:
-- If direct host access is blocked by your network, use Supabase pooler host/port from the same Database page and keep `sslmode=require`.
-- For production, prefer a dedicated DB role for this app instead of the default admin role.
+</div>
